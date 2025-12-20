@@ -20,7 +20,6 @@ export class ChildService {
       throw new NotFoundException('Lengkapi profil Ibu terlebih dahulu.');
     }
 
-    // Proteksi 1: Cek nama duplikat (Case Insensitive)
     const existing = await this.prisma.childProfile.findFirst({
       where: {
         motherId: motherProfile.id,
@@ -43,8 +42,6 @@ export class ChildService {
         birthLength: dto.birthLength,
         asiExclusive: dto.asiExclusive,
         motherId: motherProfile.id,
-        // isVerified otomatis default false dari schema
-        // stuntingRisk otomatis default PENDING dari schema
       },
     });
   }
@@ -59,7 +56,6 @@ export class ChildService {
       throw new NotFoundException('Data anak tidak ditemukan.');
     }
 
-    // PAKSA PAKAI ANY AGAR ERROR HILANG
     const childAny = child as any;
 
     if (childAny.isVerified) {
@@ -78,7 +74,6 @@ export class ChildService {
   }
 
   async verifyByKader(childId: string, risk: string) {
-    // CEK DULU APAKAH ID ADA
     const check = await this.prisma.childProfile.findUnique({
       where: { id: childId },
     });

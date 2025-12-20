@@ -15,12 +15,22 @@ const user_module_1 = require("./modules/user/user.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const mother_module_1 = require("./modules/mother/mother.module");
 const child_module_1 = require("./modules/child/child.module");
+const anthropometry_module_1 = require("./modules/anthropometry/anthropometry.module");
+const immunization_module_1 = require("./modules/immunization/immunization.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, user_module_1.UserModule, auth_module_1.AuthModule, mother_module_1.MotherModule, child_module_1.ChildModule],
+        imports: [
+            prisma_module_1.PrismaModule,
+            user_module_1.UserModule,
+            auth_module_1.AuthModule,
+            mother_module_1.MotherModule,
+            child_module_1.ChildModule,
+            anthropometry_module_1.AnthropometryModule,
+            immunization_module_1.ImmunizationModule,
+        ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

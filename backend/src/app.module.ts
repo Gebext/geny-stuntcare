@@ -6,9 +6,19 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MotherModule } from './modules/mother/mother.module';
 import { ChildModule } from './modules/child/child.module';
+import { AnthropometryModule } from './modules/anthropometry/anthropometry.module';
+import { ImmunizationModule } from './modules/immunization/immunization.module';
 
 @Module({
-  imports: [PrismaModule, UserModule, AuthModule, MotherModule, ChildModule],
+  imports: [
+    PrismaModule,
+    UserModule,
+    AuthModule,
+    MotherModule,
+    ChildModule,
+    AnthropometryModule,
+    ImmunizationModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
