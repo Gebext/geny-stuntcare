@@ -1,19 +1,20 @@
 FROM node:16.20.2
 
-RUN apt-get update && apt-get install -y postgresql-client
-
 WORKDIR /usr/src/app
 
+# Install dependencies
 COPY package*.json ./
-
 RUN npm install
 
-#COPY . .
+# Copy source
+COPY . .
 
-COPY entry.sh entry.sh
+# Expose ports
+EXPOSE 3000 5555
 
-RUN chmod +x entry.sh
+USER root
+RUN chown -R node:node /usr/src/app/node_modules
+USER node
 
-EXPOSE 3000
-
-CMD [ "sh", "entry.sh"]
+# Start backend
+CMD ["npm", "run", "start:dev"]

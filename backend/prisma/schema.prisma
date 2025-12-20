@@ -1,21 +1,210 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+// =======================
+// User & Role
+// =======================
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  roles         UserRole[]     @relation("UserRole_User")
+  motherProfile MotherProfile?
+  chatSessions  ChatSession[]
 }
 
-model User {
-  id           Int          @id @default(autoincrement())
-  login        String       @unique
-  username     String       @unique
-  password	   String
-  email        String       @unique
-  avatar       String
-  isOL         Boolean
+model Role {
+  id        Int        @id
+  name      String
+  userRoles UserRole[] @relation("UserRole_Role")
+}
+
+model UserRole {
+  userId String
+  roleId Int
+
+  user User @relation(fields: [userId], references: [id], name: "UserRole_User")
+  role Role @relation(fields: [roleId], references: [id], name: "UserRole_Role")
+
+  @@unique([userId, roleId])
+}
+
+// =======================
+// Mother & Child Profile
+// =======================
+model MotherProfile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  age           Int
+  heightCm      Float
+  weightKg      Float
+  lilaCm        Float
+  isPregnant    Boolean
+  trimester     Int?
+  ttdCompliance String?
+  createdAt     DateTime @default(now())
+
+  user          User             @relation(fields: [userId], references: [id])
+  childProfiles ChildProfile[]
+  environment   EnvironmentData?
+}
+
+model ChildProfile {
+  id              String   @id @default(uuid())
+  motherId        String
+  name            String
+  gender          String
+  birthDate       DateTime
+  birthWeight     Float
+  birthLength     Float
+  asiExclusive    Boolean
+  
+  // Field Tambahan untuk Verifikasi & AI
+  isVerified      Boolean  @default(false)
+  stuntingRisk    String   @default("PENDING") // LOW, MEDIUM, HIGH, PENDING
+
+  createdAt       DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  mother          MotherProfile      @relation(fields: [motherId], references: [id])
+  anthropometries  Anthropometry[]
+  immunizations    Immunization[]
+  nutritionHistories NutritionHistory[]
+  healthHistories   HealthHistory[]
+  aiResults         AIResult[]
+
+  @@unique([motherId, name]) // Proteksi Level Database agar nama tidak duplikat per Ibu
+}
+
+// =======================
+// Anthropometry
+// =======================
+model Anthropometry {
+  id              String   @id @default(uuid())
+  childId         String
+  weightKg        Float
+  heightCm        Float
+  ageMonth        Int
+  measuredBy      String
+  measurementDate DateTime
+  verified        Boolean
+  createdAt       DateTime @default(now())
+
+  child ChildProfile @relation(fields: [childId], references: [id])
+}
+
+// =======================
+// Immunization
+// =======================
+model Immunization {
+  id          String   @id @default(uuid())
+  childId     String
+  vaccineName String
+  status      String
+  dateGiven   DateTime
+
+  child ChildProfile @relation(fields: [childId], references: [id])
+}
+
+// =======================
+// Nutrition History
+// =======================
+model NutritionHistory {
+  id              String   @id @default(uuid())
+  childId         String
+  foodType        String
+  frequencyPerDay Int
+  proteinSource   String
+  recordedAt      DateTime
+
+  child ChildProfile @relation(fields: [childId], references: [id])
+}
+
+// =======================
+// Health History
+// =======================
+model HealthHistory {
+  id            String   @id @default(uuid())
+  childId       String
+  diseaseName   String
+  diagnosisDate DateTime
+  isChronic     Boolean
+
+  child ChildProfile @relation(fields: [childId], references: [id])
+}
+
+// =======================
+// Environment Data
+// =======================
+model EnvironmentData {
+  id               String  @id @default(uuid())
+  motherId         String  @unique
+  cleanWater       Boolean
+  sanitation       String
+  distanceFaskesKm Float
+  transportation   String
+
+  mother MotherProfile @relation(fields: [motherId], references: [id])
+}
+
+// =======================
+// AI Result & Recommendation
+// =======================
+model AIResult {
+  id              String   @id @default(uuid())
+  childId         String
+  riskLevel       String
+  dominantFactors Json
+  modelVersion    String
+  generatedAt     DateTime @default(now())
+
+  child           ChildProfile     @relation(fields: [childId], references: [id])
+  recommendations Recommendation[]
+}
+
+model Recommendation {
+  id          String  @id @default(uuid())
+  aiResultId  String
+  category    String
+  content     String
+  frequency   String
+  isCompleted Boolean
+
+  aiResult AIResult @relation(fields: [aiResultId], references: [id])
+}
+
+// =======================
+// Chat
+// =======================
+model ChatSession {
+  id              String   @id @default(uuid())
+  userId          String
+  contextSnapshot Json
+  startedAt       DateTime @default(now())
+
+  user     User          @relation(fields: [userId], references: [id])
+  messages ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  sessionId String
+  sender    String
+  message   String
+  createdAt DateTime @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id])
 }

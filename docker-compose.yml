@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.9"
 
 x-service-base: &service-base
   init: true
@@ -12,19 +12,22 @@ x-volume-base: &volume-base
 services:
   db:
     <<: *service-base
-    image: postgres:latest
+    image: postgres:18
     container_name: db
     env_file:
       - backend/.env
     networks:
       - endence
+    volumes:
+      - db-data:/var/lib/postgresql
 
   backend:
     <<: *service-base
     depends_on:
       - db
     container_name: backend
-    build: 
+    command: npm run start:dev
+    build:
       context: ./backend
       dockerfile: Dockerfile.backend
     env_file:
@@ -33,37 +36,49 @@ services:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     ports:
-      - 3000:3000
-      - 5555:5555
+      - "3000:3000" # backend API
     networks:
       - endence
-  
+
   frontend:
     <<: *service-base
     container_name: frontend
-    build: 
+    build:
       context: ./frontend
       dockerfile: Dockerfile.frontend
     volumes:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
     ports:
-      - 4000:3000
+      - "4000:3000" # frontend Next.js
     depends_on:
       - backend
     networks:
       - endence
 
-  # adminer:
-  #   <<: *service-base
-  #   image: adminer
-  #   container_name: adminer
-  #   restart: always
-  #   ports:
-  #     - 8080:8080
-  #   networks:
-  #     - endence
+  studio:
+    <<: *service-base
+    container_name: prisma_studio
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    depends_on:
+      - backend
+    command: npx prisma studio --port 5555
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "5556:5555"
+    networks:
+      - endence
+    env_file:
+      - ./backend/.env # <-- ini penting
 
 networks:
   endence:
     driver: bridge
+
+volumes:
+  db-data:
+    <<: *volume-base
