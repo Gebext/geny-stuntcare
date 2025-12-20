@@ -8,6 +8,7 @@ import { MotherModule } from './modules/mother/mother.module';
 import { ChildModule } from './modules/child/child.module';
 import { AnthropometryModule } from './modules/anthropometry/anthropometry.module';
 import { ImmunizationModule } from './modules/immunization/immunization.module';
+import { NutritionModule } from './modules/nutrition/nutrition.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ImmunizationModule } from './modules/immunization/immunization.module';
     ChildModule,
     AnthropometryModule,
     ImmunizationModule,
+    NutritionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

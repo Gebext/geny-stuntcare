@@ -17,6 +17,7 @@ const mother_module_1 = require("./modules/mother/mother.module");
 const child_module_1 = require("./modules/child/child.module");
 const anthropometry_module_1 = require("./modules/anthropometry/anthropometry.module");
 const immunization_module_1 = require("./modules/immunization/immunization.module");
+const nutrition_module_1 = require("./modules/nutrition/nutrition.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -30,6 +31,7 @@ exports.AppModule = AppModule = __decorate([
             child_module_1.ChildModule,
             anthropometry_module_1.AnthropometryModule,
             immunization_module_1.ImmunizationModule,
+            nutrition_module_1.NutritionModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
