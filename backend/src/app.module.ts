@@ -10,6 +10,8 @@ import { AnthropometryModule } from './modules/anthropometry/anthropometry.modul
 import { ImmunizationModule } from './modules/immunization/immunization.module';
 import { NutritionModule } from './modules/nutrition/nutrition.module';
 import { HealthModule } from './modules/health/health.module';
+import { EnvironmentModule } from './modules/environment/environment.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { HealthModule } from './modules/health/health.module';
     ImmunizationModule,
     NutritionModule,
     HealthModule,
+    EnvironmentModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
