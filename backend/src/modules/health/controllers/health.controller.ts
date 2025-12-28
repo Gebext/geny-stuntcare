@@ -23,7 +23,7 @@ export class HealthController {
     return this.service.addRecord(req.user.id, roleIds, dto);
   }
 
-  @Get('child/:childId')
+  @Get('/child/:childId')
   async getHistory(@Param('childId') childId: string) {
     return this.service.getHistory(childId);
   }
