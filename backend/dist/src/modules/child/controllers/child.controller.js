@@ -24,6 +24,9 @@ let ChildController = class ChildController {
     constructor(childService) {
         this.childService = childService;
     }
+    async findAll(query) {
+        return this.childService.findAll(query);
+    }
     async create(req, dto) {
         const userId = req.user.id;
         return this.childService.createChild(userId, dto);
@@ -37,8 +40,19 @@ let ChildController = class ChildController {
     async verify(id, risk) {
         return this.childService.verifyByKader(id, risk);
     }
+    async getDetail(id) {
+        return this.childService.findOne(id);
+    }
 };
 exports.ChildController = ChildController;
+__decorate([
+    (0, common_1.Get)(),
+    (0, roles_decorators_1.Roles)('KADER', 'ADMIN'),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_child_dto_1.ChildFilterDto]),
+    __metadata("design:returntype", Promise)
+], ChildController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorators_1.Roles)('MOTHER'),
@@ -75,6 +89,14 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], ChildController.prototype, "verify", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, roles_decorators_1.Roles)('KADER', 'ADMIN'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ChildController.prototype, "getDetail", null);
 exports.ChildController = ChildController = __decorate([
     (0, common_1.UseInterceptors)(response_wrapper_interceptor_1.ResponseWrapperInterceptor),
     (0, common_1.Controller)('children'),

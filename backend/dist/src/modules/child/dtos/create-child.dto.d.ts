@@ -6,3 +6,10 @@ export declare class CreateChildDto {
     birthLength: number;
     asiExclusive: boolean;
 }
+export declare class ChildFilterDto {
+    name?: string;
+    gender?: string;
+    stuntingRisk?: string;
+    page?: number;
+    limit?: number;
+}

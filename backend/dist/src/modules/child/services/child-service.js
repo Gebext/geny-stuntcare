@@ -16,6 +16,98 @@ let ChildService = class ChildService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async findOne(id) {
+        const child = await this.prisma.childProfile.findUnique({
+            where: { id },
+            include: {
+                mother: {
+                    include: {
+                        user: {
+                            select: { name: true, phone: true },
+                        },
+                        environment: true,
+                    },
+                },
+                anthropometries: {
+                    orderBy: { measurementDate: 'desc' },
+                },
+                immunizations: {
+                    orderBy: { dateGiven: 'desc' },
+                },
+                nutritionHistories: {
+                    orderBy: { recordedAt: 'desc' },
+                },
+                healthHistories: {
+                    orderBy: { diagnosisDate: 'desc' },
+                },
+                aiResults: {
+                    orderBy: { generatedAt: 'desc' },
+                    take: 1,
+                    include: { recommendations: true },
+                },
+            },
+        });
+        if (!child) {
+            throw new common_1.NotFoundException(`Data anak dengan ID ${id} tidak ditemukan`);
+        }
+        return {
+            ...child,
+            motherName: child.mother?.user?.name || 'Tidak diketahui',
+            contactMother: child.mother?.user?.phone || 'Tidak ada nomor',
+            summary: {
+                totalMeasurements: child.anthropometries.length,
+                totalVaccines: child.immunizations.length,
+                lastDiagnosis: child.healthHistories[0]?.diseaseName || 'Sehat/Tidak ada record',
+                isVerified: child.isVerified,
+            },
+        };
+    }
+    async findAll(query) {
+        const { name, gender, stuntingRisk, page, limit } = query;
+        const skip = (page - 1) * limit;
+        const where = {};
+        if (name) {
+            where.name = { contains: name, mode: 'insensitive' };
+        }
+        if (gender) {
+            where.gender = gender;
+        }
+        if (stuntingRisk) {
+            where.stuntingRisk = stuntingRisk;
+        }
+        const [data, total] = await Promise.all([
+            this.prisma.childProfile.findMany({
+                where,
+                skip,
+                take: limit,
+                include: {
+                    mother: {
+                        include: {
+                            user: {
+                                select: { name: true },
+                            },
+                            environment: true,
+                        },
+                    },
+                    anthropometries: { orderBy: { measurementDate: 'desc' }, take: 1 },
+                },
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.childProfile.count({ where }),
+        ]);
+        const formattedData = data.map((item) => ({
+            ...item,
+            motherName: item.mother?.user?.name || 'Tidak diketahui',
+        }));
+        return {
+            data: formattedData,
+            meta: {
+                total,
+                page,
+                lastPage: Math.ceil(total / limit),
+            },
+        };
+    }
     async createChild(userId, dto) {
         const motherProfile = await this.prisma.motherProfile.findUnique({
             where: { userId },
@@ -52,14 +144,14 @@ let ChildService = class ChildService {
         if (!child || child.mother.userId !== userId) {
             throw new common_1.NotFoundException('Data anak tidak ditemukan.');
         }
-        const childAny = child;
-        if (childAny.isVerified) {
+        const { id, motherId, ...updateData } = dto;
+        if (child.isVerified) {
             throw new common_1.ForbiddenException('Data sudah diverifikasi Kader dan tidak dapat diubah.');
         }
         return this.prisma.childProfile.update({
             where: { id: childId },
             data: {
-                ...dto,
+                ...updateData,
                 birthDate: dto.birthDate ? new Date(dto.birthDate) : child.birthDate,
             },
         });

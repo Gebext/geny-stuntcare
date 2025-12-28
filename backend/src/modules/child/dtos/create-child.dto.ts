@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNumber,
@@ -5,6 +6,9 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsEnum,
+  IsOptional,
+  IsInt,
+  Min,
 } from 'class-validator';
 
 export class CreateChildDto {
@@ -28,4 +32,30 @@ export class CreateChildDto {
 
   @IsBoolean()
   asiExclusive: boolean;
+}
+
+export class ChildFilterDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsEnum(['L', 'P'])
+  gender?: string;
+
+  @IsOptional()
+  @IsString()
+  stuntingRisk?: string; // Sesuai enum di database Anda (misal: LOW, MEDIUM, HIGH)
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number = 10;
 }
