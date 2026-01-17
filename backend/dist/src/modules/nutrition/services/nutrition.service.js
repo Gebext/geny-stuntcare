@@ -16,17 +16,23 @@ let NutritionService = class NutritionService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async addRecord(userId, roles, dto) {
+    async addRecord(userId, dto) {
         const child = await this.prisma.childProfile.findUnique({
             where: { id: dto.childId },
             include: { mother: true },
         });
         if (!child)
             throw new common_1.NotFoundException('Data anak tidak ditemukan');
-        const isKader = roles.includes(2);
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { roles: { include: { role: true } } },
+        });
+        if (!user)
+            throw new common_1.NotFoundException('User tidak ditemukan');
+        const isKader = user.roles.some((r) => r.role.name === 'KADER');
         const isOwner = child.mother.userId === userId;
         if (!isKader && !isOwner) {
-            throw new common_1.ForbiddenException('Akses ditolak untuk mencatat riwayat nutrisi ini.');
+            throw new common_1.ForbiddenException('Akses ditolak untuk mencatat riwayat nutrisi anak ini.');
         }
         return this.prisma.nutritionHistory.create({
             data: {
@@ -34,11 +40,16 @@ let NutritionService = class NutritionService {
                 foodType: dto.foodType,
                 frequencyPerDay: dto.frequencyPerDay,
                 proteinSource: dto.proteinSource,
-                recordedAt: new Date(dto.recordedAt),
+                recordedAt: dto.recordedAt ? new Date(dto.recordedAt) : new Date(),
             },
         });
     }
     async getHistory(childId) {
+        const child = await this.prisma.childProfile.findUnique({
+            where: { id: childId },
+        });
+        if (!child)
+            throw new common_1.NotFoundException('Data anak tidak ditemukan');
         return this.prisma.nutritionHistory.findMany({
             where: { childId },
             orderBy: { recordedAt: 'desc' },

@@ -10,8 +10,8 @@ import { CreateImmunizationDto } from '../dtos/crate-immunization.dto';
 export class ImmunizationService {
   constructor(private prisma: PrismaService) {}
 
-  async addRecord(userId: string, roles: number[], dto: CreateImmunizationDto) {
-    // Gunakan roles dari JWT
+  async addRecord(userId: string, dto: CreateImmunizationDto) {
+    // 1. Cari data anak dan relasi ibunya
     const child = await this.prisma.childProfile.findUnique({
       where: { id: dto.childId },
       include: { mother: true },
@@ -19,16 +19,27 @@ export class ImmunizationService {
 
     if (!child) throw new NotFoundException('Data anak tidak ditemukan');
 
-    // Cek apakah user adalah Kader (2) atau Ibu pemilik anak tersebut
-    const isKader = roles.includes(2);
+    // 2. Ambil data User yang sedang login beserta Role-nya
+    const user: any = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: { include: { role: true } } },
+    });
+
+    if (!user) throw new NotFoundException('User tidak ditemukan');
+
+    // 3. Logic Validasi:
+    // - Apakah dia Kader?
+    const isKader = user.roles.some((r: any) => r.role.name === 'KADER');
+    // - Apakah dia Ibu dari anak ini?
     const isOwner = child.mother.userId === userId;
 
     if (!isKader && !isOwner) {
       throw new ForbiddenException(
-        'Akses ditolak untuk mencatat imunisasi ini.',
+        'Anda tidak memiliki akses untuk mencatat imunisasi anak ini.',
       );
     }
 
+    // 4. Eksekusi simpan data
     return this.prisma.immunization.create({
       data: {
         childId: dto.childId,
@@ -42,6 +53,11 @@ export class ImmunizationService {
   async getChildHistory(childId: string) {
     return this.prisma.immunization.findMany({
       where: { childId },
+      include: {
+        child: {
+          select: { name: true },
+        },
+      },
       orderBy: { dateGiven: 'desc' },
     });
   }

@@ -18,13 +18,14 @@ const jwt_auth_guard_1 = require("../../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../../common/guards/roles.guard");
 const immunization_service_1 = require("../services/immunization.service");
 const crate_immunization_dto_1 = require("../dtos/crate-immunization.dto");
+const roles_decorators_1 = require("../../../common/decorators/roles.decorators");
 let ImmunizationController = class ImmunizationController {
     constructor(service) {
         this.service = service;
     }
     async create(req, dto) {
-        const roleIds = req.user.roles.map((r) => r.roleId || r.id);
-        return this.service.addRecord(req.user.id, roleIds, dto);
+        const userId = req.user.id || req.user.sub;
+        return this.service.addRecord(userId, dto);
     }
     async getHistory(childId) {
         return this.service.getChildHistory(childId);
@@ -33,6 +34,7 @@ let ImmunizationController = class ImmunizationController {
 exports.ImmunizationController = ImmunizationController;
 __decorate([
     (0, common_1.Post)(),
+    (0, roles_decorators_1.Roles)('KADER', 'MOTHER'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -41,6 +43,7 @@ __decorate([
 ], ImmunizationController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)('child/:childId'),
+    (0, roles_decorators_1.Roles)('KADER', 'MOTHER', 'ADMIN'),
     __param(0, (0, common_1.Param)('childId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

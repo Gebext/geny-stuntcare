@@ -16,17 +16,23 @@ let HealthService = class HealthService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async addRecord(userId, roles, dto) {
+    async addRecord(userId, dto) {
         const child = await this.prisma.childProfile.findUnique({
             where: { id: dto.childId },
             include: { mother: true },
         });
         if (!child)
             throw new common_1.NotFoundException('Data anak tidak ditemukan');
-        const isKader = roles.includes(2);
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { roles: { include: { role: true } } },
+        });
+        if (!user)
+            throw new common_1.NotFoundException('User tidak ditemukan');
+        const isKader = user.roles.some((r) => r.role.name === 'KADER');
         const isOwner = child.mother.userId === userId;
         if (!isKader && !isOwner) {
-            throw new common_1.ForbiddenException('Akses ditolak untuk mencatat riwayat kesehatan ini.');
+            throw new common_1.ForbiddenException('Akses ditolak untuk mencatat riwayat kesehatan anak ini.');
         }
         return this.prisma.healthHistory.create({
             data: {
@@ -38,6 +44,11 @@ let HealthService = class HealthService {
         });
     }
     async getHistory(childId) {
+        const childExists = await this.prisma.childProfile.findUnique({
+            where: { id: childId },
+        });
+        if (!childExists)
+            throw new common_1.NotFoundException('Data anak tidak ditemukan');
         return this.prisma.healthHistory.findMany({
             where: { childId },
             orderBy: { diagnosisDate: 'desc' },

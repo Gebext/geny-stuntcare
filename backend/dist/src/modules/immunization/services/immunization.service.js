@@ -16,17 +16,23 @@ let ImmunizationService = class ImmunizationService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async addRecord(userId, roles, dto) {
+    async addRecord(userId, dto) {
         const child = await this.prisma.childProfile.findUnique({
             where: { id: dto.childId },
             include: { mother: true },
         });
         if (!child)
             throw new common_1.NotFoundException('Data anak tidak ditemukan');
-        const isKader = roles.includes(2);
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { roles: { include: { role: true } } },
+        });
+        if (!user)
+            throw new common_1.NotFoundException('User tidak ditemukan');
+        const isKader = user.roles.some((r) => r.role.name === 'KADER');
         const isOwner = child.mother.userId === userId;
         if (!isKader && !isOwner) {
-            throw new common_1.ForbiddenException('Akses ditolak untuk mencatat imunisasi ini.');
+            throw new common_1.ForbiddenException('Anda tidak memiliki akses untuk mencatat imunisasi anak ini.');
         }
         return this.prisma.immunization.create({
             data: {
@@ -40,6 +46,11 @@ let ImmunizationService = class ImmunizationService {
     async getChildHistory(childId) {
         return this.prisma.immunization.findMany({
             where: { childId },
+            include: {
+                child: {
+                    select: { name: true },
+                },
+            },
             orderBy: { dateGiven: 'desc' },
         });
     }

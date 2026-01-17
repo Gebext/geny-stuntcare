@@ -18,13 +18,15 @@ const jwt_auth_guard_1 = require("../../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../../common/guards/roles.guard");
 const nutrition_service_1 = require("../services/nutrition.service");
 const create_nutrition_dto_1 = require("../dtos/create-nutrition.dto");
+const roles_decorators_1 = require("../../../common/decorators/roles.decorators");
+const response_wrapper_interceptor_1 = require("../../../common/interceptors/response-wrapper.interceptor");
 let NutritionController = class NutritionController {
     constructor(service) {
         this.service = service;
     }
     async create(req, dto) {
-        const roleIds = req.user.roles.map((r) => r.roleId || r.id);
-        return this.service.addRecord(req.user.id, roleIds, dto);
+        const userId = req.user.id || req.user.sub;
+        return this.service.addRecord(userId, dto);
     }
     async getHistory(childId) {
         return this.service.getHistory(childId);
@@ -33,6 +35,7 @@ let NutritionController = class NutritionController {
 exports.NutritionController = NutritionController;
 __decorate([
     (0, common_1.Post)(),
+    (0, roles_decorators_1.Roles)('KADER', 'MOTHER'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -41,12 +44,14 @@ __decorate([
 ], NutritionController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)('child/:childId'),
+    (0, roles_decorators_1.Roles)('KADER', 'MOTHER', 'ADMIN'),
     __param(0, (0, common_1.Param)('childId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], NutritionController.prototype, "getHistory", null);
 exports.NutritionController = NutritionController = __decorate([
+    (0, common_1.UseInterceptors)(common_1.ClassSerializerInterceptor, response_wrapper_interceptor_1.ResponseWrapperInterceptor),
     (0, common_1.Controller)('nutrition'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [nutrition_service_1.NutritionService])

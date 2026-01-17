@@ -10,11 +10,15 @@ export declare class ImmunizationController {
         status: string;
         dateGiven: Date;
     }>;
-    getHistory(childId: string): Promise<{
+    getHistory(childId: string): Promise<({
+        child: {
+            name: string;
+        };
+    } & {
         id: string;
         childId: string;
         vaccineName: string;
         status: string;
         dateGiven: Date;
-    }[]>;
+    })[]>;
 }
