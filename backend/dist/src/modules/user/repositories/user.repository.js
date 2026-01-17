@@ -17,19 +17,25 @@ let UserRepository = class UserRepository {
         this.prisma = prisma;
     }
     async create(data) {
-        const DEFAULT_ROLE_ID = 3;
+        const { role, ...userData } = data;
+        const roleMapping = {
+            ADMIN: 1,
+            KADER: 2,
+            MOTHER: 3,
+        };
+        const targetRoleId = role ? roleMapping[role.toUpperCase()] || 3 : 3;
         const user = await this.prisma.user.create({
             data: {
-                ...data,
+                ...userData,
                 roles: {
                     create: [
                         {
                             role: {
-                                connect: { id: DEFAULT_ROLE_ID }
-                            }
-                        }
-                    ]
-                }
+                                connect: { id: targetRoleId },
+                            },
+                        },
+                    ],
+                },
             },
             select: {
                 id: true,
@@ -44,10 +50,10 @@ let UserRepository = class UserRepository {
                         role: {
                             select: {
                                 id: true,
-                                name: true
-                            }
-                        }
-                    }
+                                name: true,
+                            },
+                        },
+                    },
                 },
                 motherProfile: true,
                 chatSessions: true,
@@ -126,6 +132,15 @@ let UserRepository = class UserRepository {
             },
         });
         return user;
+    }
+    async findMany(params) {
+        return this.prisma.user.findMany({
+            skip: params.skip,
+            take: params.take,
+            where: params.where,
+            orderBy: params.orderBy,
+            include: params.include,
+        });
     }
     async findManyAndCount(params) {
         const { skip, take, where, orderBy } = params;

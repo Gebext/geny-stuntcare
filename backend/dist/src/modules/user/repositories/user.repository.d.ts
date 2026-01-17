@@ -6,6 +6,7 @@ type PrismaCreateData = Omit<Prisma.UserCreateInput, 'id' | 'createdAt' | 'updat
     email: string;
     passwordHash: string;
     phone?: string;
+    role?: string;
 };
 type PrismaUpdateData = Partial<PrismaCreateData>;
 export declare class UserRepository {
@@ -16,6 +17,13 @@ export declare class UserRepository {
     findOneById(id: string): Promise<UserWithoutHash | null>;
     update(id: string, data: PrismaUpdateData): Promise<UserWithoutHash>;
     remove(id: string): Promise<UserWithoutHash>;
+    findMany(params: {
+        skip?: number;
+        take?: number;
+        where?: Prisma.UserWhereInput;
+        orderBy?: Prisma.UserOrderByWithRelationInput;
+        include?: Prisma.UserInclude;
+    }): Promise<any[]>;
     findManyAndCount(params: {
         skip?: number;
         take?: number;

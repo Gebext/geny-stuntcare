@@ -1,4 +1,5 @@
 // schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,9 +22,10 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  roles         UserRole[]     @relation("UserRole_User")
-  motherProfile MotherProfile?
-  chatSessions  ChatSession[]
+  roles            UserRole[]        @relation("UserRole_User")
+  motherProfile    MotherProfile?
+  chatSessions     ChatSession[]
+  kaderAssignments KaderAssignment[] @relation("KaderToAssignment")
 }
 
 model Role {
@@ -57,36 +59,37 @@ model MotherProfile {
   ttdCompliance String?
   createdAt     DateTime @default(now())
 
-  user          User             @relation(fields: [userId], references: [id])
-  childProfiles ChildProfile[]
-  environment   EnvironmentData?
+  user             User              @relation(fields: [userId], references: [id])
+  childProfiles    ChildProfile[]
+  environment      EnvironmentData?
+  kaderAssignments KaderAssignment[] @relation("MotherToAssignment")
 }
 
 model ChildProfile {
-  id              String   @id @default(uuid())
-  motherId        String
-  name            String
-  gender          String
-  birthDate       DateTime
-  birthWeight     Float
-  birthLength     Float
-  asiExclusive    Boolean
-  
-  // Field Tambahan untuk Verifikasi & AI
-  isVerified      Boolean  @default(false)
-  stuntingRisk    String   @default("PENDING") // LOW, MEDIUM, HIGH, PENDING
+  id           String   @id @default(uuid())
+  motherId     String
+  name         String
+  gender       String
+  birthDate    DateTime
+  birthWeight  Float
+  birthLength  Float
+  asiExclusive Boolean
 
-  createdAt       DateTime @default(now())
+  // Field Tambahan untuk Verifikasi & AI
+  isVerified   Boolean @default(false)
+  stuntingRisk String  @default("PENDING") // LOW, MEDIUM, HIGH, PENDING
+
+  createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  mother          MotherProfile      @relation(fields: [motherId], references: [id])
-  anthropometries  Anthropometry[]
-  immunizations    Immunization[]
+  mother             MotherProfile      @relation(fields: [motherId], references: [id])
+  anthropometries    Anthropometry[]
+  immunizations      Immunization[]
   nutritionHistories NutritionHistory[]
-  healthHistories   HealthHistory[]
-  aiResults         AIResult[]
+  healthHistories    HealthHistory[]
+  aiResults          AIResult[]
 
-  @@unique([motherId, name]) // Proteksi Level Database agar nama tidak duplikat per Ibu
+  @@unique([motherId, name])
 }
 
 // =======================
@@ -207,4 +210,19 @@ model ChatMessage {
   createdAt DateTime @default(now())
 
   session ChatSession @relation(fields: [sessionId], references: [id])
+}
+
+// =======================
+// Kader Assignment
+// =======================
+model KaderAssignment {
+  id         String   @id @default(uuid())
+  kaderId    String
+  motherId  String   @unique // Tambahkan @unique di sini
+  assignedAt DateTime @default(now())
+
+  kader  User          @relation(fields: [kaderId], references: [id], name: "KaderToAssignment")
+  mother MotherProfile @relation(fields: [motherId], references: [id], name: "MotherToAssignment")
+
+  @@unique([kaderId, motherId])
 }

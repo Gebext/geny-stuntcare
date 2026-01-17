@@ -7,10 +7,12 @@ export declare class UserController {
     private readonly userService;
     constructor(userService: UserService);
     create(createUserDto: CreateUserDto): Promise<UserResponseDto>;
+    getUsersByRole(roleName: string): Promise<UserResponseDto[]>;
     findAll(query: UserQueryDto): Promise<any>;
     findOne(id: string): Promise<UserResponseDto>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto>;
     remove(id: string): Promise<{
         id: string;
     }>;
+    adminCreateUser(createUserDto: CreateUserDto): Promise<UserResponseDto>;
 }

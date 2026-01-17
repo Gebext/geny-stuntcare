@@ -1,20 +1,31 @@
-import { IsNotEmpty, IsString, IsEmail, MinLength, IsOptional } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsEmail,
+  MinLength,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
-  readonly name:string;
+  readonly name: string;
 
   @IsEmail()
   @IsNotEmpty()
-  readonly email:string;
+  readonly email: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional() // Dibuat optional agar Admin bisa tidak mengisi (pakai default)
   @MinLength(8)
-  readonly password:string;
+  readonly password?: string;
 
   @IsString()
   @IsOptional()
-  readonly phone?:string;
+  readonly phone?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly role?: string; // Field tambahan untuk jalur Admin
 }

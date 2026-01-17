@@ -24,7 +24,7 @@ let UserService = class UserService {
         const passwordHash = await bcrypt.hash(password, 10);
         const createdUser = await this.userRepository.create({
             ...userData,
-            passwordHash
+            passwordHash,
         });
         return (0, class_transformer_1.plainToInstance)(user_response_dto_1.UserResponseDto, createdUser);
     }
@@ -64,6 +64,27 @@ let UserService = class UserService {
         }
         return (0, class_transformer_1.plainToInstance)(user_response_dto_1.UserResponseDto, user);
     }
+    async findByRole(roleName) {
+        const users = await this.userRepository.findMany({
+            where: {
+                roles: {
+                    some: {
+                        role: {
+                            name: roleName.toUpperCase(),
+                        },
+                    },
+                },
+            },
+            include: {
+                roles: {
+                    include: {
+                        role: true,
+                    },
+                },
+            },
+        });
+        return (0, class_transformer_1.plainToInstance)(user_response_dto_1.UserResponseDto, users);
+    }
     async update(id, updateUserDto) {
         const existingUser = await this.userRepository.findOneById(id);
         if (!existingUser) {
@@ -89,6 +110,17 @@ let UserService = class UserService {
         }
         const removedUser = await this.userRepository.remove(id);
         return (0, class_transformer_1.plainToInstance)(user_response_dto_1.UserResponseDto, removedUser);
+    }
+    async adminCreateUser(createUserDto) {
+        const { password, role, ...userData } = createUserDto;
+        const passwordToHash = password || 'Password123!';
+        const passwordHash = await bcrypt.hash(passwordToHash, 10);
+        const createdUser = await this.userRepository.create({
+            ...userData,
+            passwordHash,
+            role: role ? role.toUpperCase() : 'KADER',
+        });
+        return (0, class_transformer_1.plainToInstance)(user_response_dto_1.UserResponseDto, createdUser);
     }
 };
 exports.UserService = UserService;

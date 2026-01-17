@@ -9,6 +9,8 @@ export declare class UserService {
     create(createUserDto: CreateUserDto): Promise<UserResponseDto>;
     findAll(query: UserQueryDto): Promise<any>;
     findOne(id: string): Promise<UserResponseDto>;
+    findByRole(roleName: string): Promise<UserResponseDto[]>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto>;
     remove(id: string): Promise<UserResponseDto>;
+    adminCreateUser(createUserDto: CreateUserDto): Promise<UserResponseDto>;
 }

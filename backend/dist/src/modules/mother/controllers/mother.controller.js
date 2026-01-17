@@ -26,14 +26,10 @@ let MotherController = class MotherController {
     }
     async handleProfile(req, dto) {
         const userId = req.user.id || req.user.sub;
-        if (!userId)
-            throw new common_1.ForbiddenException('User ID tidak ditemukan dalam token');
         return this.motherService.upsertProfile(userId, dto);
     }
     async updateProfile(req, dto) {
         const userId = req.user.id || req.user.sub;
-        if (!userId)
-            throw new common_1.ForbiddenException('User ID tidak ditemukan dalam token');
         return this.motherService.upsertProfile(userId, dto);
     }
     async getMyProfile(req) {
@@ -42,6 +38,33 @@ let MotherController = class MotherController {
     }
     async getMotherProfile(userId) {
         return this.motherService.getProfile(userId);
+    }
+    async getAllMothers(page, limit, search, status) {
+        return this.motherService.getAllMothers({
+            page: Number(page) || 1,
+            limit: Number(limit) || 10,
+            search,
+            status,
+        });
+    }
+    async assignKader(data) {
+        return this.motherService.assignMotherToKader(data.kaderId, data.motherId);
+    }
+    async unassignKader(data) {
+        return this.motherService.unassignMotherFromKader(data.motherId);
+    }
+    async getAssignedMothers(req) {
+        const kaderId = req.user.id || req.user.sub;
+        return this.motherService.getAssignedMothers(kaderId);
+    }
+    async getAssignedChildren(req, name, gender, stuntingRisk, page) {
+        const kaderId = req.user.id || req.user.sub;
+        return this.motherService.getAssignedChildren(kaderId, {
+            name,
+            gender,
+            stuntingRisk,
+            page: Number(page) || 1,
+        });
     }
 };
 exports.MotherController = MotherController;
@@ -79,6 +102,53 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], MotherController.prototype, "getMotherProfile", null);
+__decorate([
+    (0, common_1.Get)('all'),
+    (0, roles_decorators_1.Roles)('ADMIN'),
+    __param(0, (0, common_1.Query)('page')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('search')),
+    __param(3, (0, common_1.Query)('status')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, String]),
+    __metadata("design:returntype", Promise)
+], MotherController.prototype, "getAllMothers", null);
+__decorate([
+    (0, common_1.Post)('assign'),
+    (0, roles_decorators_1.Roles)('ADMIN'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], MotherController.prototype, "assignKader", null);
+__decorate([
+    (0, common_1.Delete)('unassign'),
+    (0, roles_decorators_1.Roles)('ADMIN'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], MotherController.prototype, "unassignKader", null);
+__decorate([
+    (0, common_1.Get)('assigned'),
+    (0, roles_decorators_1.Roles)('KADER'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], MotherController.prototype, "getAssignedMothers", null);
+__decorate([
+    (0, common_1.Get)('assigned-children'),
+    (0, roles_decorators_1.Roles)('KADER'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('name')),
+    __param(2, (0, common_1.Query)('gender')),
+    __param(3, (0, common_1.Query)('stuntingRisk')),
+    __param(4, (0, common_1.Query)('page')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, String, String]),
+    __metadata("design:returntype", Promise)
+], MotherController.prototype, "getAssignedChildren", null);
 exports.MotherController = MotherController = __decorate([
     (0, common_1.UseInterceptors)(common_1.ClassSerializerInterceptor, response_wrapper_interceptor_1.ResponseWrapperInterceptor),
     (0, common_1.Controller)('mother'),

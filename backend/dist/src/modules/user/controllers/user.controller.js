@@ -30,6 +30,10 @@ let UserController = class UserController {
     async create(createUserDto) {
         return this.userService.create(createUserDto);
     }
+    async getUsersByRole(roleName) {
+        const users = await this.userService.findByRole(roleName);
+        return users;
+    }
     async findAll(query) {
         return this.userService.findAll(query);
     }
@@ -43,6 +47,9 @@ let UserController = class UserController {
         const removedUser = await this.userService.remove(id);
         return { id: removedUser.id };
     }
+    async adminCreateUser(createUserDto) {
+        return this.userService.create(createUserDto);
+    }
 };
 exports.UserController = UserController;
 __decorate([
@@ -53,6 +60,14 @@ __decorate([
     __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "create", null);
+__decorate([
+    (0, common_1.Get)('role/:roleName'),
+    (0, roles_decorators_1.Roles)('ADMIN'),
+    __param(0, (0, common_1.Param)('roleName')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getUsersByRole", null);
 __decorate([
     (0, common_1.Get)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
@@ -91,6 +106,16 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('admin/create'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorators_1.Roles)('ADMIN'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "adminCreateUser", null);
 exports.UserController = UserController = __decorate([
     (0, common_1.UseInterceptors)(common_2.ClassSerializerInterceptor, response_wrapper_interceptor_1.ResponseWrapperInterceptor),
     (0, common_1.Controller)('users'),
