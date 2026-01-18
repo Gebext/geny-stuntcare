@@ -13,6 +13,8 @@ import {
   AlertTriangle,
   Filter,
   X,
+  Heart,
+  Stethoscope,
 } from "lucide-react";
 
 export default function UserManagementPage() {
@@ -51,17 +53,25 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto pb-24 bg-[#fbfcfc] min-h-screen">
+    <div className=" space-y-6 max-w-6xl mx-auto pb-24 bg-[#fbfcfc] min-h-screen">
       {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight  uppercase">
+      <header className="flex flex-col md:flex-row items-center gap-6 bg-gradient-to-br from-[#3AC4B6] to-[#2DA89B] p-8 md:p-10 rounded-[40px] text-white shadow-xl shadow-teal-100/50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+        <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-[28px] flex items-center justify-center border border-white/30 shrink-0 shadow-inner">
+          <Stethoscope className="w-10 h-10 text-white fill-white/20" />
+        </div>
+        <div className="text-center md:text-left">
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight">
             User Management
           </h1>
-          <p className="text-[10px] font-black text-[#3ac3b5] uppercase tracking-widest ">
-            Akses Database Posyandu
+          <p className="text-teal-50/80 text-sm font-bold uppercase tracking-widest mt-1">
+            Akses Database Posyandu{" "}
           </p>
         </div>
+      </header>
+
+      {/* --- ROLE FILTER --- */}
+      <div className="md:flex md:space-y-0 space-y-4 justify-between">
         <div className="relative group w-full md:w-80">
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#3ac3b5]"
@@ -78,26 +88,24 @@ export default function UserManagementPage() {
             className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-[22px] shadow-sm outline-none text-[11px] font-black uppercase tracking-widest transition-all focus:ring-2 focus:ring-[#3ac3b5]/10"
           />
         </div>
-      </div>
-
-      {/* --- ROLE FILTER --- */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {["ALL", "ADMIN", "KADER"].map((r) => (
-          <button
-            key={r}
-            onClick={() => {
-              setRole(r);
-              setPage(1);
-            }}
-            className={`px-6 py-2.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] transition-all ${
-              role === r
-                ? "bg-[#3ac3b5] text-white shadow-lg shadow-[#3ac3b5]/20"
-                : "bg-white text-slate-400 border border-slate-100"
-            }`}
-          >
-            {r === "ALL" ? "SEMUA USER" : r}
-          </button>
-        ))}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {["ALL", "ADMIN", "KADER"].map((r) => (
+            <button
+              key={r}
+              onClick={() => {
+                setRole(r);
+                setPage(1);
+              }}
+              className={`px-6 py-2.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] transition-all ${
+                role === r
+                  ? "bg-[#3ac3b5] text-white shadow-lg shadow-[#3ac3b5]/20"
+                  : "bg-white text-slate-400 border border-slate-100"
+              }`}
+            >
+              {r === "ALL" ? "SEMUA USER" : r}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* --- TABLE --- */}
