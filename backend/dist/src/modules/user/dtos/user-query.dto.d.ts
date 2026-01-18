@@ -3,4 +3,5 @@ export declare class UserQueryDto {
     limit?: number;
     search?: string;
     email?: string;
+    role?: string;
 }

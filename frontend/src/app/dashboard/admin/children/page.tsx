@@ -38,7 +38,7 @@ export default function AdminChildrenPage() {
             <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
               Database Anak
             </h1>
-            <p className="text-sm font-medium text-slate-500 italic">
+            <p className="text-sm font-medium text-slate-500 ">
               Data terpadu tumbuh kembang dan skor risiko stunting.
             </p>
           </div>
@@ -234,7 +234,7 @@ export default function AdminChildrenPage() {
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 Halaman {page} dari {meta.totalPages}
               </p>
-              <p className="text-[9px] font-bold text-slate-300 uppercase italic">
+              <p className="text-[9px] font-bold text-slate-300 uppercase ">
                 Total {meta.total} data terdaftar
               </p>
             </div>

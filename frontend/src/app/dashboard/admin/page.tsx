@@ -31,7 +31,7 @@ export default function AdminOverviewPage() {
           <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
             Dashboard Agregat
           </h1>
-          <p className="text-sm font-medium text-slate-500 italic">
+          <p className="text-sm font-medium text-slate-500 ">
             Data terintegrasi seluruh wilayah binaan.
           </p>
         </div>
@@ -168,7 +168,7 @@ export default function AdminOverviewPage() {
                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
                                 Cakupan Wilayah
                               </span>
-                              <span className="text-[9px] font-black text-[#3ac3b5] italic">
+                              <span className="text-[9px] font-black text-[#3ac3b5] ">
                                 {Math.min(
                                   (kader.jumlahIbuDibina / 10) * 100,
                                   100,

@@ -35,6 +35,26 @@ let KaderDashboardController = class KaderDashboardController {
             riskDistribution: distribution,
         };
     }
+    async getPending(req, page, limit) {
+        const kaderId = req.user.id;
+        const pageNum = parseInt(page) || 1;
+        const limitNum = parseInt(limit) || 5;
+        const result = await this.kaderService.getPendingList(kaderId, pageNum, limitNum);
+        return { success: true, ...result };
+    }
+    async getAgenda(req, page, limit) {
+        const kaderId = req.user.id;
+        const pageNumber = parseInt(page) || 1;
+        const limitNumber = parseInt(limit) || 10;
+        const result = await this.kaderService.getPriorityAgenda(kaderId, pageNumber, limitNumber);
+        return {
+            success: true,
+            message: result.data.length > 0
+                ? 'Daftar pengingat berhasil dimuat'
+                : 'Tidak ada agenda prioritas',
+            ...result,
+        };
+    }
 };
 exports.KaderDashboardController = KaderDashboardController;
 __decorate([
@@ -44,6 +64,24 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], KaderDashboardController.prototype, "getFullDashboard", null);
+__decorate([
+    (0, common_1.Get)('pending-measurements'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", Promise)
+], KaderDashboardController.prototype, "getPending", null);
+__decorate([
+    (0, common_1.Get)('priority-agenda'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", Promise)
+], KaderDashboardController.prototype, "getAgenda", null);
 exports.KaderDashboardController = KaderDashboardController = __decorate([
     (0, common_1.Controller)('dashboard/kader'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

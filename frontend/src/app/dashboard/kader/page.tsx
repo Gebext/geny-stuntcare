@@ -24,7 +24,7 @@ export default function KaderOverview() {
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
             Dashboard Kader
           </h1>
-          <p className="text-sm font-medium text-slate-500 italic">
+          <p className="text-sm font-medium text-slate-500 ">
             Pantau perkembangan anak binaan secara real-time.
           </p>
         </div>

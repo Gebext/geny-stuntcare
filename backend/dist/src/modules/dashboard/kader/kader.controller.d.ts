@@ -60,4 +60,31 @@ export declare class KaderDashboardController {
             value: number;
         }[];
     }>;
+    getPending(req: any, page: string, limit: string): Promise<{
+        data: {
+            id: string;
+            name: string;
+            motherName: string;
+            motherPhone: string;
+            status: string;
+        }[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+        success: boolean;
+    }>;
+    getAgenda(req: any, page: string, limit: string): Promise<{
+        data: any[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+        success: boolean;
+        message: string;
+    }>;
 }

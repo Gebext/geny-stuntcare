@@ -16,6 +16,8 @@ import {
   Menu,
   X,
   BabyIcon,
+  CalendarArrowUp,
+  Stethoscope,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { useAuthStore } from "@/store/authStore";
@@ -49,12 +51,6 @@ const motherMenuItems = [
     label: "GENY Chat",
     path: "/dashboard/mother/geny",
   },
-  {
-    id: "reminder",
-    icon: Bell,
-    label: "Pengingat",
-    path: "/dashboard/mother/reminder",
-  },
 ];
 
 const kaderMenuItems = [
@@ -71,10 +67,10 @@ const kaderMenuItems = [
     path: "/dashboard/kader/children-list",
   },
   {
-    id: "reminder",
-    icon: Bell,
-    label: "Pengingat",
-    path: "/dashboard/kader/reminder",
+    id: "agenda",
+    icon: CalendarArrowUp,
+    label: "Agenda",
+    path: "/dashboard/kader/agenda",
   },
 ];
 
@@ -92,10 +88,16 @@ const adminMenuItems = [
     path: "/dashboard/admin/monitoring",
   },
   {
-    id: "Children",
+    id: "children",
     icon: BabyIcon,
     label: "Children",
     path: "/dashboard/admin/children",
+  },
+  {
+    id: "user-management",
+    icon: Stethoscope,
+    label: "Nakes Management",
+    path: "/dashboard/admin/user-management",
   },
 ];
 

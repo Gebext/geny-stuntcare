@@ -15,13 +15,18 @@ export class UserQueryDto {
   @Min(1)
   @Max(100)
   limit?: number = 10;
-  
+
   // --- Filtering / Searching ---
   @IsOptional()
   @IsString()
-  search?: string; // Untuk mencari di name atau email
+  search?: string;
 
   @IsOptional()
   @IsString()
-  email?: string; // Filter berdasarkan email persis
+  email?: string;
+
+  // TAMBAHKAN INI: Agar filter role terbaca
+  @IsOptional()
+  @IsString()
+  role?: string;
 }

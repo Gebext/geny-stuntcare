@@ -13,15 +13,10 @@ import { Prisma } from '@prisma/client';
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
-  /**
-   * Membuat user baru.
-   * Langkah: 1. Pisahkan password. 2. Hash password. 3. Kirim ke Repository (tanpa password mentah).
-   */
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const { password, ...userData } = createUserDto;
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Repository akan otomatis set role ke MOTHER (ID 3) karena field 'role' kosong
     const createdUser = await this.userRepository.create({
       ...userData,
       passwordHash,
@@ -31,13 +26,12 @@ export class UserService {
   }
 
   /**
-   * Mengambil semua user.
+   * Mengambil semua user dengan filter Role
    */
   async findAll(query: UserQueryDto): Promise<any> {
-    const { page, limit, search, email } = query;
+    const { page, limit, search, email, role } = query; // Destructure 'role' di sini
     const skip = (page - 1) * limit;
 
-    // Prisma Where Clause Construction
     const where: Prisma.UserWhereInput = {};
 
     // 1. Filtering by Email
@@ -45,7 +39,7 @@ export class UserService {
       where.email = email;
     }
 
-    // 2. Searching (Filter di Name atau Email)
+    // 2. Searching (Name atau Email)
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -53,18 +47,28 @@ export class UserService {
       ];
     }
 
-    // Dapatkan data dan total count secara bersamaan
+    // 3. TAMBAHKAN: Filtering by Role
+    if (role && role !== 'ALL') {
+      where.roles = {
+        some: {
+          role: {
+            name: role.toUpperCase(),
+          },
+        },
+      };
+    }
+
+    // Dapatkan data dan total count
     const [users, totalCount] = await this.userRepository.findManyAndCount({
       skip,
       take: limit,
       where,
     });
 
-    // Hitung metadata
     const lastPage = Math.ceil(totalCount / limit);
 
     return {
-      users: plainToInstance(UserResponseDto, users), // Data User yang bersih
+      users: plainToInstance(UserResponseDto, users),
       meta: {
         total: totalCount,
         page: page,
@@ -74,20 +78,14 @@ export class UserService {
     };
   }
 
-  /**
-   * Mengambil satu user berdasarkan ID.
-   */
   async findOne(id: string): Promise<UserResponseDto> {
     const user = await this.userRepository.findOneById(id);
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found.`);
     }
-
-    // Transformasi objek tunggal
     return plainToInstance(UserResponseDto, user);
   }
 
-  // Tambahkan fungsi ini di dalam class UserService
   async findByRole(roleName: string): Promise<UserResponseDto[]> {
     const users = await this.userRepository.findMany({
       where: {
@@ -99,7 +97,6 @@ export class UserService {
           },
         },
       },
-      // Kita sertakan include supaya data roles-nya tidak hilang saat di-transform
       include: {
         roles: {
           include: {
@@ -111,49 +108,35 @@ export class UserService {
 
     return plainToInstance(UserResponseDto, users);
   }
-
-  /**
-   * Mengupdate user. (Logika hash password jika password diubah)
-   */
   async update(
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    // --- Penanganan Error Not Found ---
     const existingUser = await this.userRepository.findOneById(id);
-    if (!existingUser) {
+    if (!existingUser)
       throw new NotFoundException(`User with ID ${id} not found.`);
-    }
-    // ------------------------------------
 
-    let updatedData: any = updateUserDto; // Kita ubah tipe menjadi any sementara
+    // 1. Pisahkan password mentah
+    const { password, ...restData } = updateUserDto;
+    const finalData: any = { ...restData };
 
-    // Logika hashing password jika password diubah...
-    if (updateUserDto.password) {
-      const { password, ...restData } = updateUserDto;
-      const passwordHash = await bcrypt.hash(password, 10);
-      updatedData = { ...restData, passwordHash };
-    } else {
-      const { password, ...restData } = updateUserDto;
-      updatedData = restData;
+    // 2. Jika ada password, hash dan masukkan ke field passwordHash
+    if (password) {
+      finalData.passwordHash = await bcrypt.hash(password, 10);
     }
 
-    const updatedUser = await this.userRepository.update(id, updatedData);
+    // 3. Pastikan field 'password' mentah dibuang agar tidak masuk ke repository
+    delete finalData.password;
+
+    const updatedUser = await this.userRepository.update(id, finalData);
     return plainToInstance(UserResponseDto, updatedUser);
   }
 
-  /**
-   * Menghapus user.
-   */
   async remove(id: string): Promise<UserResponseDto> {
-    // --- Penanganan Error Not Found ---
     const existingUser = await this.userRepository.findOneById(id);
-    if (!existingUser) {
+    if (!existingUser)
       throw new NotFoundException(`User with ID ${id} not found.`);
-    }
-    // ------------------------------------
 
-    // Jika user ditemukan, lanjutkan penghapusan
     const removedUser = await this.userRepository.remove(id);
     return plainToInstance(UserResponseDto, removedUser);
   }
@@ -161,18 +144,13 @@ export class UserService {
   async adminCreateUser(
     createUserDto: CreateUserDto,
   ): Promise<UserResponseDto> {
-    // 1. Destructuring password & role (ambil dari DTO)
     const { password, role, ...userData } = createUserDto;
-
-    // 2. Hash password (dengan fallback default jika tidak diisi)
     const passwordToHash = password || 'Password123!';
     const passwordHash = await bcrypt.hash(passwordToHash, 10);
 
-    // 3. Kirim ke Repository
     const createdUser = await this.userRepository.create({
       ...userData,
       passwordHash,
-      // GANTI: Gunakan 'role' bukan 'roleName' agar sesuai destructuring di Repository
       role: role ? role.toUpperCase() : 'KADER',
     });
 

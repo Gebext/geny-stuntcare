@@ -12,31 +12,20 @@ export default function MotherAnalysisSelectionPage() {
   return (
     <div className="min-h-screen bg-[#FDFEFF] pb-10 px-6 pt-8">
       {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
-          Analisis AI
-        </h1>
-        <p className="text-slate-400 text-xs font-bold mt-1">
-          Pilih profil anak untuk melihat laporan gizi pintar
-        </p>
-      </div>
-
-      {/* Info Card */}
-      <div className="bg-gradient-to-br from-[#3AC4B6] to-[#2DA89B] p-6 rounded-[35px] text-white shadow-lg mb-8 relative overflow-hidden">
-        <Sparkles className="absolute top-4 right-4 w-10 h-10 opacity-20" />
-        <div className="flex items-center gap-3 mb-2">
-          <Brain className="w-5 h-5" />
-          <span className="text-[10px] font-black uppercase tracking-widest">
-            Teknologi Geny AI
-          </span>
+      <header className="flex items-center gap-5 bg-gradient-to-br from-[#3AC4B6] to-[#2DA89B] p-8 rounded-[35px] text-white shadow-lg shadow-teal-100/50">
+        <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-[22px] flex items-center justify-center border border-white/30">
+          <Brain className="w-8 h-8 fill-white" />
         </div>
-        <p className="text-sm font-medium leading-relaxed opacity-90">
-          Sistem kami menganalisis data antropometri dan pola makan untuk
-          memberikan rekomendasi kesehatan terbaik.
-        </p>
-      </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Analisis AI</h1>
+          <p className="text-teal-50/80 text-sm font-medium mt-1">
+            Sistem kami menganalisis data antropometri dan pola makan untuk
+            memberikan rekomendasi kesehatan terbaik.{" "}
+          </p>
+        </div>
+      </header>
 
-      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 mb-4">
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 mb-4 mt-6">
         Daftar Anak Anda
       </h3>
 

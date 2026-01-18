@@ -257,7 +257,7 @@ export default function MonitoringPage() {
             <h3 className="text-lg font-bold text-slate-800 text-center mb-2">
               Hapus Penugasan?
             </h3>
-            <p className="text-sm text-slate-500 text-center mb-8 italic">
+            <p className="text-sm text-slate-500 text-center mb-8 ">
               Pelepasan kader untuk ibu{" "}
               <span className="font-bold text-slate-700">
                 {confirmData?.motherName}

@@ -165,7 +165,7 @@ export const LoginForm = ({
 
           {role !== "mother" && (
             <div className="mt-6 text-center">
-              <p className="text-xs text-muted-foreground italic">
+              <p className="text-xs text-muted-foreground ">
                 Hubungi administrator jika Anda belum memiliki akses akun.
               </p>
             </div>

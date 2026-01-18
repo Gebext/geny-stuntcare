@@ -289,7 +289,7 @@ export default function MotherMePage() {
                   <h4 className="text-sm font-bold text-slate-700">
                     Kepatuhan TTD
                   </h4>
-                  <p className="text-[11px] text-slate-400 font-medium italic">
+                  <p className="text-[11px] text-slate-400 font-medium ">
                     Rutin konsumsi Tablet Tambah Darah
                   </p>
                 </div>

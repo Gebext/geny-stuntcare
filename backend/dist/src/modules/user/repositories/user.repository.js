@@ -16,8 +16,31 @@ let UserRepository = class UserRepository {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    getUserSelect() {
+        return {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+            roles: {
+                select: {
+                    role: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+            },
+            motherProfile: true,
+            chatSessions: true,
+        };
+    }
     async create(data) {
-        const { role, ...userData } = data;
+        const { role, passwordHash, name, email, phone } = data;
         const roleMapping = {
             ADMIN: 1,
             KADER: 2,
@@ -26,7 +49,10 @@ let UserRepository = class UserRepository {
         const targetRoleId = role ? roleMapping[role.toUpperCase()] || 3 : 3;
         const user = await this.prisma.user.create({
             data: {
-                ...userData,
+                name,
+                email,
+                passwordHash,
+                phone,
                 roles: {
                     create: [
                         {
@@ -37,132 +63,58 @@ let UserRepository = class UserRepository {
                     ],
                 },
             },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                isActive: true,
-                createdAt: true,
-                updatedAt: true,
-                roles: {
-                    select: {
-                        role: {
-                            select: {
-                                id: true,
-                                name: true,
-                            },
-                        },
-                    },
-                },
-                motherProfile: true,
-                chatSessions: true,
-            },
+            select: this.getUserSelect(),
         });
         return user;
     }
     async findAll() {
-        const users = await this.prisma.user.findMany({
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                isActive: true,
-                createdAt: true,
-                updatedAt: true,
-                roles: true,
-                motherProfile: true,
-                chatSessions: true,
-            },
+        return this.prisma.user.findMany({
+            select: this.getUserSelect(),
         });
-        return users;
     }
     async findOneById(id) {
-        const user = await this.prisma.user.findUnique({
+        return this.prisma.user.findUnique({
             where: { id },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                isActive: true,
-                createdAt: true,
-                updatedAt: true,
-                roles: true,
-                motherProfile: true,
-                chatSessions: true,
-            },
+            select: this.getUserSelect(),
         });
-        return user;
     }
     async update(id, data) {
+        const updateData = {};
+        if (data.name)
+            updateData.name = data.name;
+        if (data.email)
+            updateData.email = data.email;
+        if (data.phone)
+            updateData.phone = data.phone;
+        if (data.passwordHash)
+            updateData.passwordHash = data.passwordHash;
         const user = await this.prisma.user.update({
             where: { id },
-            data,
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                isActive: true,
-                createdAt: true,
-                updatedAt: true,
-                roles: true,
-                motherProfile: true,
-                chatSessions: true,
-            },
+            data: updateData,
+            select: this.getUserSelect(),
         });
         return user;
     }
     async remove(id) {
-        const user = await this.prisma.user.delete({
-            where: { id },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                isActive: true,
-                createdAt: true,
-                updatedAt: true,
-                roles: true,
-                motherProfile: true,
-                chatSessions: true,
-            },
-        });
-        return user;
-    }
-    async findMany(params) {
-        return this.prisma.user.findMany({
-            skip: params.skip,
-            take: params.take,
-            where: params.where,
-            orderBy: params.orderBy,
-            include: params.include,
+        return await this.prisma.$transaction(async (tx) => {
+            await tx.userRole.deleteMany({ where: { userId: id } });
+            await tx.motherProfile.deleteMany({ where: { userId: id } });
+            const user = await tx.user.delete({
+                where: { id },
+                select: { id: true, name: true, email: true },
+            });
+            return user;
         });
     }
     async findManyAndCount(params) {
         const { skip, take, where, orderBy } = params;
-        const userSelect = {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            isActive: true,
-            createdAt: true,
-            updatedAt: true,
-            roles: true,
-            motherProfile: true,
-            chatSessions: true,
-        };
         const [users, totalCount] = await this.prisma.$transaction([
             this.prisma.user.findMany({
                 skip,
                 take,
                 where,
                 orderBy,
-                select: userSelect,
+                select: this.getUserSelect(),
             }),
             this.prisma.user.count({ where }),
         ]);

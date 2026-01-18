@@ -59,4 +59,28 @@ export declare class KaderDashboardService {
         label: string;
         value: number;
     }[]>;
+    getPriorityAgenda(kaderId: string, page?: number, limit?: number): Promise<{
+        data: any[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
+    getPendingList(kaderId: string, page?: number, limit?: number): Promise<{
+        data: {
+            id: string;
+            name: string;
+            motherName: string;
+            motherPhone: string;
+            status: string;
+        }[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
 }

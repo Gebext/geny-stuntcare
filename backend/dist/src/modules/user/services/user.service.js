@@ -29,7 +29,7 @@ let UserService = class UserService {
         return (0, class_transformer_1.plainToInstance)(user_response_dto_1.UserResponseDto, createdUser);
     }
     async findAll(query) {
-        const { page, limit, search, email } = query;
+        const { page, limit, search, email, role } = query;
         const skip = (page - 1) * limit;
         const where = {};
         if (email) {
@@ -40,6 +40,15 @@ let UserService = class UserService {
                 { name: { contains: search, mode: 'insensitive' } },
                 { email: { contains: search, mode: 'insensitive' } },
             ];
+        }
+        if (role && role !== 'ALL') {
+            where.roles = {
+                some: {
+                    role: {
+                        name: role.toUpperCase(),
+                    },
+                },
+            };
         }
         const [users, totalCount] = await this.userRepository.findManyAndCount({
             skip,
@@ -87,27 +96,21 @@ let UserService = class UserService {
     }
     async update(id, updateUserDto) {
         const existingUser = await this.userRepository.findOneById(id);
-        if (!existingUser) {
+        if (!existingUser)
             throw new common_1.NotFoundException(`User with ID ${id} not found.`);
+        const { password, ...restData } = updateUserDto;
+        const finalData = { ...restData };
+        if (password) {
+            finalData.passwordHash = await bcrypt.hash(password, 10);
         }
-        let updatedData = updateUserDto;
-        if (updateUserDto.password) {
-            const { password, ...restData } = updateUserDto;
-            const passwordHash = await bcrypt.hash(password, 10);
-            updatedData = { ...restData, passwordHash };
-        }
-        else {
-            const { password, ...restData } = updateUserDto;
-            updatedData = restData;
-        }
-        const updatedUser = await this.userRepository.update(id, updatedData);
+        delete finalData.password;
+        const updatedUser = await this.userRepository.update(id, finalData);
         return (0, class_transformer_1.plainToInstance)(user_response_dto_1.UserResponseDto, updatedUser);
     }
     async remove(id) {
         const existingUser = await this.userRepository.findOneById(id);
-        if (!existingUser) {
+        if (!existingUser)
             throw new common_1.NotFoundException(`User with ID ${id} not found.`);
-        }
         const removedUser = await this.userRepository.remove(id);
         return (0, class_transformer_1.plainToInstance)(user_response_dto_1.UserResponseDto, removedUser);
     }

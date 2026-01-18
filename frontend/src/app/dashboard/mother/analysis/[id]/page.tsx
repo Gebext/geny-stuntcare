@@ -174,10 +174,10 @@ export default function MotherAnalysisDetailPage() {
                     {analysis?.status}
                   </span>
                 </div>
-                <h2 className="text-3xl font-black text-slate-800 mb-4 tracking-tight uppercase italic">
+                <h2 className="text-3xl font-black text-slate-800 mb-4 tracking-tight uppercase ">
                   Laporan Gizi Pintar
                 </h2>
-                <p className="text-slate-500 text-lg leading-relaxed font-medium italic">
+                <p className="text-slate-500 text-lg leading-relaxed font-medium ">
                   "{analysis?.summary}"
                 </p>
               </div>
