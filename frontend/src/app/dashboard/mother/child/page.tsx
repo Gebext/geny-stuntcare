@@ -119,7 +119,7 @@ export default function MotherChildrenPage() {
                     "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
                     errors.name
                       ? "border-rose-400"
-                      : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white"
+                      : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                   )}
                 />
                 {errors.name && (
@@ -141,7 +141,7 @@ export default function MotherChildrenPage() {
                     "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
                     errors.birthDate
                       ? "border-rose-400"
-                      : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white"
+                      : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                   )}
                 />
                 {errors.birthDate && (
@@ -156,6 +156,26 @@ export default function MotherChildrenPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                    ASI Eksklusif
+                  </label>
+                  <div className="h-[62px] bg-slate-50 rounded-[22px] flex items-center justify-between px-6 border-2 border-transparent">
+                    <Heart
+                      className={cn(
+                        "w-5 h-5 transition-all",
+                        watch("asiExclusive")
+                          ? "text-rose-500 fill-rose-500 scale-110"
+                          : "text-slate-300",
+                      )}
+                    />
+                    <input
+                      type="checkbox"
+                      {...register("asiExclusive")}
+                      className="w-11 h-6 bg-slate-300 rounded-full appearance-none checked:bg-[#3AC4B6] transition-all cursor-pointer relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:w-4 after:h-4 after:rounded-full after:transition-all checked:after:left-6 shadow-inner"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">
                     Jenis Kelamin
                   </label>
                   <select
@@ -165,26 +185,6 @@ export default function MotherChildrenPage() {
                     <option value="L">Laki-laki</option>
                     <option value="P">Perempuan</option>
                   </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    ASI Eksklusif
-                  </label>
-                  <div className="h-[62px] bg-slate-50 rounded-[22px] flex items-center justify-between px-6 border-2 border-transparent">
-                    <Heart
-                      className={cn(
-                        "w-5 h-5 transition-all",
-                        watch("asiExclusive")
-                          ? "text-rose-500 fill-rose-500 scale-110"
-                          : "text-slate-300"
-                      )}
-                    />
-                    <input
-                      type="checkbox"
-                      {...register("asiExclusive")}
-                      className="w-11 h-6 bg-slate-300 rounded-full appearance-none checked:bg-[#3AC4B6] transition-all cursor-pointer relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:w-4 after:h-4 after:rounded-full after:transition-all checked:after:left-6 shadow-inner"
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -203,7 +203,7 @@ export default function MotherChildrenPage() {
                         "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
                         errors.birthWeight
                           ? "border-rose-400"
-                          : "border-transparent focus:border-[#3AC4B6]/20"
+                          : "border-transparent focus:border-[#3AC4B6]/20",
                       )}
                     />
                     <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
@@ -229,7 +229,7 @@ export default function MotherChildrenPage() {
                         "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
                         errors.birthLength
                           ? "border-rose-400"
-                          : "border-transparent focus:border-[#3AC4B6]/20"
+                          : "border-transparent focus:border-[#3AC4B6]/20",
                       )}
                     />
                     <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
@@ -294,7 +294,7 @@ export default function MotherChildrenPage() {
                         "w-12 h-12 rounded-2xl flex items-center justify-center",
                         child.gender === "L"
                           ? "bg-blue-50 text-blue-500"
-                          : "bg-pink-50 text-pink-500"
+                          : "bg-pink-50 text-pink-500",
                       )}
                     >
                       <User className="w-5 h-5" />

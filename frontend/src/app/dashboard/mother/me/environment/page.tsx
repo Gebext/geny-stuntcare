@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Activity,
   Info,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
@@ -34,7 +35,7 @@ type EnvFormValues = z.infer<typeof envFormSchema>;
 
 export default function MotherEnvironmentPage() {
   const profile = useMotherStore(
-    (state: any) => state.profile || state.motherData
+    (state: any) => state.profile || state.motherData,
   );
   const updateMutation = useUpdateEnvironment();
 
@@ -58,6 +59,7 @@ export default function MotherEnvironmentPage() {
   const currentCleanWater = watch("cleanWater");
   const currentDistance = watch("distanceFaskesKm");
 
+  // Sync data
   useEffect(() => {
     if (profile?.environment) {
       reset({
@@ -76,19 +78,48 @@ export default function MotherEnvironmentPage() {
     });
   };
 
-  if (!profile) return null;
+  // --- PEMBATAS ANTI-BLANK ---
+  if (!profile) {
+    return (
+      <RoleGuard allowedRoles={["mother"]}>
+        <div className="min-h-[80vh] flex items-center justify-center p-6 text-center">
+          <div className="space-y-6 animate-in fade-in zoom-in duration-500">
+            <div className="w-24 h-24 bg-slate-50 rounded-[40px] flex items-center justify-center mx-auto border border-slate-100">
+              <ClipboardList className="w-12 h-12 text-slate-300" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                Profil Belum Siap
+              </h2>
+              <p className="text-sm text-slate-400 mt-2 max-w-xs mx-auto">
+                Bunda perlu mengakses menu <b>Profil Kesehatan</b> terlebih
+                dahulu sebelum mengatur lingkungan.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/mother/me"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-[#3AC4B6] text-white rounded-[22px] font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-teal-100 transition-transform active:scale-95"
+            >
+              Ke Profil Bunda
+            </Link>
+          </div>
+        </div>
+      </RoleGuard>
+    );
+  }
 
   return (
     <RoleGuard allowedRoles={["mother"]}>
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-8 pb-10">
-        {/* HEADER SECTION - Sama dengan Mother Me */}
         <div className="space-y-4">
           <Link
             href="/dashboard/mother/me"
-            className="flex items-center gap-2 text-slate-400 hover:text-[#3AC4B6] transition-colors text-[10px] font-bold uppercase tracking-[0.2em] ml-2"
+            className="group flex items-center gap-2 text-slate-400 hover:text-[#3AC4B6] transition-colors text-[10px] font-bold uppercase tracking-[0.2em] ml-2"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Profil
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />{" "}
+            Kembali ke Profil
           </Link>
+
           <header className="flex items-center gap-5 bg-gradient-to-br from-[#3AC4B6] to-[#2DA89B] p-8 rounded-[35px] text-white shadow-lg shadow-teal-100/50">
             <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-[22px] flex items-center justify-center border border-white/30">
               <Home className="w-8 h-8 fill-white" />
@@ -107,7 +138,7 @@ export default function MotherEnvironmentPage() {
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
           <div className="bg-white p-8 md:p-10 rounded-[35px] border border-slate-100 shadow-sm space-y-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-              {/* Air Bersih - Radio Style like Status Hamil */}
+              {/* Air Bersih */}
               <div className="space-y-4">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                   <Droplets className="w-3.5 h-3.5 text-[#3AC4B6]" /> Akses Air
@@ -125,8 +156,8 @@ export default function MotherEnvironmentPage() {
                       className={cn(
                         "flex-1 py-4.5 rounded-[22px] border-2 font-bold text-[10px] tracking-wider transition-all",
                         currentCleanWater === option.value
-                          ? "border-[#3AC4B6] bg-[#F0FDFA] text-[#3AC4B6] shadow-sm"
-                          : "border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200"
+                          ? "border-[#3AC4B6] bg-[#F0FDFA] text-[#3AC4B6] shadow-md shadow-teal-900/5"
+                          : "border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200",
                       )}
                     >
                       {option.label}
@@ -135,11 +166,11 @@ export default function MotherEnvironmentPage() {
                 </div>
               </div>
 
-              {/* Jarak Faskes - Input with Unit */}
+              {/* Jarak Faskes */}
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                  <MapPin className="w-3.5 h-3.5 text-[#3AC4B6]" />{" "}
-                  <span>Jarak ke Faskes</span>
+                  <MapPin className="w-3.5 h-3.5 text-[#3AC4B6]" /> Jarak ke
+                  Faskes
                 </label>
                 <div className="relative group">
                   <input
@@ -150,110 +181,118 @@ export default function MotherEnvironmentPage() {
                       "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.distanceFaskesKm
                         ? "border-rose-400"
-                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white"
+                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                     )}
                   />
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
+                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs uppercase tracking-widest">
                     KM
                   </span>
                 </div>
-                {errors.distanceFaskesKm && (
-                  <p className="text-[10px] text-rose-500 font-bold ml-2 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />{" "}
-                    {errors.distanceFaskesKm.message}
-                  </p>
-                )}
               </div>
 
-              {/* Jenis Sanitasi - Select Style */}
+              {/* Jenis Sanitasi */}
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                   <ShieldCheck className="w-3.5 h-3.5 text-[#3AC4B6]" /> Jenis
                   Sanitasi
                 </label>
-                <select
-                  {...register("sanitation")}
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-[#3AC4B6]/20 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 outline-none transition-all cursor-pointer appearance-none"
-                >
-                  <option value="Septic Tank">Septic Tank (Leher Angsa)</option>
-                  <option value="Lubang Tanah">Cemplung / Lubang Tanah</option>
-                  <option value="Saluran Terbuka">
-                    Sungai / Saluran Terbuka
-                  </option>
-                </select>
+                <div className="relative">
+                  <select
+                    {...register("sanitation")}
+                    className="w-full bg-slate-50 border-2 border-transparent focus:border-[#3AC4B6]/20 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 outline-none transition-all cursor-pointer appearance-none"
+                  >
+                    <option value="Septic Tank">
+                      Septic Tank (Leher Angsa)
+                    </option>
+                    <option value="Lubang Tanah">
+                      Cemplung / Lubang Tanah
+                    </option>
+                    <option value="Saluran Terbuka">
+                      Sungai / Saluran Terbuka
+                    </option>
+                  </select>
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
+                    <Activity className="w-4 h-4" />
+                  </div>
+                </div>
               </div>
 
-              {/* Transportasi - Select Style */}
+              {/* Transportasi */}
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                   <Bike className="w-3.5 h-3.5 text-[#3AC4B6]" /> Transportasi
                   Utama
                 </label>
-                <select
-                  {...register("transportation")}
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-[#3AC4B6]/20 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 outline-none transition-all cursor-pointer appearance-none"
-                >
-                  <option value="Motor">Sepeda Motor</option>
-                  <option value="Mobil">Mobil Pribadi</option>
-                  <option value="Angkutan Umum">Angkutan Umum</option>
-                  <option value="Jalan Kaki">Jalan Kaki</option>
-                </select>
+                <div className="relative">
+                  <select
+                    {...register("transportation")}
+                    className="w-full bg-slate-50 border-2 border-transparent focus:border-[#3AC4B6]/20 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 outline-none transition-all cursor-pointer appearance-none"
+                  >
+                    <option value="Motor">Sepeda Motor</option>
+                    <option value="Mobil">Mobil Pribadi</option>
+                    <option value="Angkutan Umum">Angkutan Umum</option>
+                    <option value="Jalan Kaki">Jalan Kaki</option>
+                  </select>
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* TTD Compliance Style Info Box */}
-            <div className="p-6 bg-[#F8FAFC] rounded-[25px] flex items-center justify-between border border-slate-50">
-              <div className="flex items-center gap-4">
-                <div className="w-11 h-11 bg-teal-50 text-[#3AC4B6] rounded-2xl flex items-center justify-center">
-                  <Info className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-700">
-                    Validasi Lokasi
-                  </h4>
-                  <p className="text-[11px] text-slate-400 font-medium italic">
-                    Data ini digunakan untuk analisis aksesibilitas kesehatan
-                  </p>
-                </div>
+            <div className="p-6 bg-[#F8FAFC] rounded-[25px] flex items-center gap-5 border border-slate-50">
+              <div className="w-11 h-11 bg-teal-50 text-[#3AC4B6] rounded-2xl flex items-center justify-center shrink-0">
+                <Info className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-slate-700 uppercase tracking-tight">
+                  Validasi Lokasi
+                </h4>
+                <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                  Data ini membantu tim medis menganalisis faktor eksternal
+                  risiko stunting si kecil.
+                </p>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={updateMutation.isPending}
-              className="w-full flex items-center justify-center gap-3 bg-[#3AC4B6] text-white py-5 rounded-[22px] font-bold hover:bg-[#2DA89B] transition-all disabled:opacity-50 shadow-lg shadow-teal-100/50"
+              className="w-full flex items-center justify-center gap-3 bg-[#3AC4B6] text-white py-5 rounded-[22px] font-black uppercase tracking-widest text-[11px] hover:bg-[#2DA89B] transition-all disabled:opacity-50 shadow-lg shadow-teal-100"
             >
               {updateMutation.isPending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <Save className="w-5 h-5" />
               )}
-              SIMPAN DATA LINGKUNGAN
+              Simpan Data Lingkungan
             </button>
           </div>
 
-          {/* BOTTOM STATUS CARDS - Sama dengan BMI & LILA */}
+          {/* STATUS CARDS */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-8 rounded-[35px] border border-slate-100 shadow-sm flex items-center justify-between">
-              <div className="text-left">
+            <div className="bg-white p-8 rounded-[35px] border border-slate-100 shadow-sm flex items-center justify-between group">
+              <div>
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                   Status Air
                 </p>
                 <div
                   className={cn(
-                    "inline-block px-4 py-1.5 rounded-full text-[10px] font-bold uppercase",
+                    "inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter",
                     currentCleanWater
-                      ? "bg-[#ECF7F6] text-[#3AC4B6]"
-                      : "bg-rose-50 text-rose-500"
+                      ? "bg-emerald-50 text-[#3AC4B6]"
+                      : "bg-rose-50 text-rose-500",
                   )}
                 >
-                  {currentCleanWater ? "Layak Konsumsi" : "Tidak Layak"}
+                  {currentCleanWater ? "Sangat Layak" : "Perlu Filter"}
                 </div>
               </div>
               <Droplets
                 className={cn(
-                  "w-12 h-12 opacity-20",
-                  currentCleanWater ? "text-[#3AC4B6]" : "text-rose-500"
+                  "w-12 h-12 transition-transform group-hover:scale-110 duration-500",
+                  currentCleanWater
+                    ? "text-[#3AC4B6] opacity-20"
+                    : "text-rose-500 opacity-20",
                 )}
               />
             </div>
@@ -264,10 +303,10 @@ export default function MotherEnvironmentPage() {
                   Akses Faskes
                 </p>
                 <h3 className="text-4xl font-black text-[#3AC4B6]">
-                  {currentDistance || 0} KM
+                  {currentDistance || 0} <span className="text-lg">KM</span>
                 </h3>
               </div>
-              <Activity className="w-12 h-12 text-[#3AC4B6] opacity-20" />
+              <Activity className="w-12 h-12 text-[#3AC4B6] opacity-10 absolute right-8 group-hover:rotate-12 transition-transform duration-500" />
             </div>
           </div>
         </form>

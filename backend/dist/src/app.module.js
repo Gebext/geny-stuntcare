@@ -21,6 +21,8 @@ const nutrition_module_1 = require("./modules/nutrition/nutrition.module");
 const health_module_1 = require("./modules/health/health.module");
 const environment_module_1 = require("./modules/environment/environment.module");
 const chat_module_1 = require("./modules/chat/chat.module");
+const ai_module_1 = require("./modules/ai/ai.module");
+const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -38,6 +40,8 @@ exports.AppModule = AppModule = __decorate([
             health_module_1.HealthModule,
             environment_module_1.EnvironmentModule,
             chat_module_1.ChatModule,
+            ai_module_1.AiModule,
+            dashboard_module_1.DashboardModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

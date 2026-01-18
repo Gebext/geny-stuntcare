@@ -58,10 +58,10 @@ export default function MotherMePage() {
   } = useForm<MotherFormValues>({
     resolver: zodResolver(motherFormSchema) as any,
     defaultValues: {
-      age: 0,
-      heightCm: 0,
-      weightKg: 0,
-      lilaCm: 0,
+      age: 20, // Default wajar agar tidak kena error Zod saat render pertama
+      heightCm: 155,
+      weightKg: 50,
+      lilaCm: 23,
       isPregnant: false,
       trimester: null,
       ttdCompliance: false,
@@ -71,12 +71,13 @@ export default function MotherMePage() {
   const isPregnant = watch("isPregnant");
 
   useEffect(() => {
-    if (profile) {
+    // Only reset if profile exists and has data
+    if (profile && Object.keys(profile).length > 0) {
       reset({
-        age: profile.age,
-        heightCm: profile.heightCm,
-        weightKg: profile.weightKg,
-        lilaCm: profile.lilaCm,
+        age: profile.age || 20,
+        heightCm: profile.heightCm || 155,
+        weightKg: profile.weightKg || 50,
+        lilaCm: profile.lilaCm || 23,
         isPregnant: profile.isPregnant || false,
         trimester: profile.trimester ?? null,
         ttdCompliance: profile.ttdCompliance === "Patuh",
@@ -100,7 +101,8 @@ export default function MotherMePage() {
       ? (currentWeight / Math.pow(currentHeight / 100, 2)).toFixed(1)
       : "0";
 
-  if (!profile) return null;
+  // REMOVED: if (!profile) return null;
+  // Ini yang bikin blank. Sekarang form akan tampil meski data profile belum fetch selesai.
 
   return (
     <RoleGuard allowedRoles={["mother"]}>
@@ -119,7 +121,6 @@ export default function MotherMePage() {
           </div>
         </header>
 
-        {/* --- AKSES KE ENVIRONMENT --- */}
         <div className="flex justify-start px-2">
           <Link
             href="/dashboard/mother/me/environment"
@@ -134,11 +135,9 @@ export default function MotherMePage() {
             <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#3AC4B6] group-hover:translate-x-0.5 transition-all" />
           </Link>
         </div>
-        {/* ---------------------------- */}
 
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
           <div className="bg-white p-8 md:p-10 rounded-[35px] border border-slate-100 shadow-sm space-y-10">
-            {/* ... (Konten Form Tetap Sama Seperti Sebelumnya) ... */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
@@ -152,7 +151,7 @@ export default function MotherMePage() {
                       "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.age
                         ? "border-rose-400"
-                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white"
+                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                     )}
                   />
                   <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
@@ -179,7 +178,7 @@ export default function MotherMePage() {
                       "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.heightCm
                         ? "border-rose-400"
-                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white"
+                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                     )}
                   />
                   <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
@@ -201,7 +200,7 @@ export default function MotherMePage() {
                       "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.lilaCm
                         ? "border-rose-400"
-                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white"
+                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                     )}
                   />
                   <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
@@ -223,7 +222,7 @@ export default function MotherMePage() {
                       "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.weightKg
                         ? "border-rose-400"
-                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white"
+                        : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                     )}
                   />
                   <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
@@ -241,7 +240,7 @@ export default function MotherMePage() {
                       "w-11 h-11 rounded-2xl flex items-center justify-center transition-colors",
                       isPregnant
                         ? "bg-pink-100 text-pink-500"
-                        : "bg-slate-200 text-slate-500"
+                        : "bg-slate-200 text-slate-500",
                     )}
                   >
                     <Baby className="w-5 h-5" />
@@ -262,7 +261,7 @@ export default function MotherMePage() {
                   "transition-all duration-500",
                   isPregnant
                     ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4 pointer-events-none"
+                    : "opacity-0 translate-y-4 pointer-events-none",
                 )}
               >
                 <div className="space-y-2">
@@ -316,7 +315,6 @@ export default function MotherMePage() {
             </button>
           </div>
 
-          {/* ... (BMI & LILA Status Tetap Sama) ... */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white p-8 rounded-[35px] border border-slate-100 shadow-sm flex items-center justify-between">
               <div className="text-left">
@@ -327,8 +325,8 @@ export default function MotherMePage() {
                   {Number(bmi) < 18.5
                     ? "Kurus"
                     : Number(bmi) < 25
-                    ? "Normal"
-                    : "Berlebih"}
+                      ? "Normal"
+                      : "Berlebih"}
                 </div>
               </div>
               <h3 className="text-5xl font-black text-[#3AC4B6]">{bmi}</h3>

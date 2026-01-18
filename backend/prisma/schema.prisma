@@ -89,6 +89,8 @@ model ChildProfile {
   healthHistories    HealthHistory[]
   aiResults          AIResult[]
 
+  aiAnalysis         AiAnalysis?
+
   @@unique([motherId, name])
 }
 
@@ -225,4 +227,28 @@ model KaderAssignment {
   mother MotherProfile @relation(fields: [motherId], references: [id], name: "MotherToAssignment")
 
   @@unique([kaderId, motherId])
+}
+
+
+model AiAnalysis {
+  id                String   @id @default(uuid())
+  childId           String   @unique
+  score             Int      // Skor total 0-100
+  status            String   // e.g., "Risiko Rendah"
+  summary           String   @db.Text
+  
+  // Breakdown skor untuk UI Progress Bar
+  weightScore       Int
+  heightScore       Int
+  nutritionScore    Int
+  sanitationScore   Int
+  immunizationScore Int
+  
+  // Disimpan sebagai JSON agar fleksibel (array 3 object)
+  recommendations   Json     
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  child             ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
 }

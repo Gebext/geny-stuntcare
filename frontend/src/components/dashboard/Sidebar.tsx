@@ -15,6 +15,7 @@ import {
   User,
   Menu,
   X,
+  BabyIcon,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { useAuthStore } from "@/store/authStore";
@@ -91,10 +92,10 @@ const adminMenuItems = [
     path: "/dashboard/admin/monitoring",
   },
   {
-    id: "geny",
-    icon: MessageCircle,
-    label: "GENY Chat",
-    path: "/dashboard/admin/geny",
+    id: "Children",
+    icon: BabyIcon,
+    label: "Children",
+    path: "/dashboard/admin/children",
   },
 ];
 
@@ -114,8 +115,8 @@ const SidebarContent = ({ userData, currentRole, pathname, logout }: any) => (
       {(currentRole === "kader"
         ? kaderMenuItems
         : currentRole === "admin"
-        ? adminMenuItems
-        : motherMenuItems
+          ? adminMenuItems
+          : motherMenuItems
       ).map((item) => (
         <Link key={item.id} href={item.path}>
           <div
@@ -123,7 +124,7 @@ const SidebarContent = ({ userData, currentRole, pathname, logout }: any) => (
               "flex items-center gap-4 px-4 py-3 rounded-xl transition-all mb-1 font-medium cursor-pointer",
               pathname === item.path
                 ? "bg-[#3AC4B6] text-white shadow-lg"
-                : "text-[#64748B] hover:bg-slate-50"
+                : "text-[#64748B] hover:bg-slate-50",
             )}
           >
             <item.icon className="w-5 h-5" />
@@ -233,7 +234,7 @@ export const Sidebar = () => {
       <aside
         className={cn(
           "fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-slate-100 flex flex-col md:hidden z-40 transition-transform duration-300",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <SidebarContent

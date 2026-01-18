@@ -1,0 +1,196 @@
+import { AdminDashboardService } from './admin.service';
+export declare class AdminDashboardController {
+    private readonly adminService;
+    constructor(adminService: AdminDashboardService);
+    getAllChildren(page?: number, limit?: number, search?: string, riskStatus?: string): Promise<{
+        success: boolean;
+        message: string;
+        data: ({
+            mother: {
+                user: {
+                    name: string;
+                    phone: string;
+                };
+            } & {
+                id: string;
+                userId: string;
+                age: number;
+                heightCm: number;
+                weightKg: number;
+                lilaCm: number;
+                isPregnant: boolean;
+                trimester: number;
+                ttdCompliance: string;
+                createdAt: Date;
+            };
+            anthropometries: {
+                id: string;
+                childId: string;
+                weightKg: number;
+                heightCm: number;
+                ageMonth: number;
+                measuredBy: string;
+                measurementDate: Date;
+                verified: boolean;
+                createdAt: Date;
+            }[];
+            aiAnalysis: {
+                id: string;
+                childId: string;
+                score: number;
+                status: string;
+                summary: string;
+                weightScore: number;
+                heightScore: number;
+                nutritionScore: number;
+                sanitationScore: number;
+                immunizationScore: number;
+                recommendations: import(".prisma/client").Prisma.JsonValue;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            motherId: string;
+            name: string;
+            gender: string;
+            birthDate: Date;
+            birthWeight: number;
+            birthLength: number;
+            asiExclusive: boolean;
+            isVerified: boolean;
+            stuntingRisk: string;
+            createdAt: Date;
+            updatedAt: Date;
+        })[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
+    getChildDetail(id: string): Promise<{
+        success: boolean;
+        message: string;
+        data: {
+            mother: {
+                user: {
+                    id: string;
+                    name: string;
+                    email: string;
+                    passwordHash: string;
+                    phone: string;
+                    isActive: boolean;
+                    createdAt: Date;
+                    updatedAt: Date;
+                };
+                environment: {
+                    id: string;
+                    motherId: string;
+                    cleanWater: boolean;
+                    sanitation: string;
+                    distanceFaskesKm: number;
+                    transportation: string;
+                };
+            } & {
+                id: string;
+                userId: string;
+                age: number;
+                heightCm: number;
+                weightKg: number;
+                lilaCm: number;
+                isPregnant: boolean;
+                trimester: number;
+                ttdCompliance: string;
+                createdAt: Date;
+            };
+            anthropometries: {
+                id: string;
+                childId: string;
+                weightKg: number;
+                heightCm: number;
+                ageMonth: number;
+                measuredBy: string;
+                measurementDate: Date;
+                verified: boolean;
+                createdAt: Date;
+            }[];
+            immunizations: {
+                id: string;
+                childId: string;
+                vaccineName: string;
+                status: string;
+                dateGiven: Date;
+            }[];
+            nutritionHistories: {
+                id: string;
+                childId: string;
+                foodType: string;
+                frequencyPerDay: number;
+                proteinSource: string;
+                recordedAt: Date;
+            }[];
+            healthHistories: {
+                id: string;
+                childId: string;
+                diseaseName: string;
+                diagnosisDate: Date;
+                isChronic: boolean;
+            }[];
+            aiAnalysis: {
+                id: string;
+                childId: string;
+                score: number;
+                status: string;
+                summary: string;
+                weightScore: number;
+                heightScore: number;
+                nutritionScore: number;
+                sanitationScore: number;
+                immunizationScore: number;
+                recommendations: import(".prisma/client").Prisma.JsonValue;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            motherId: string;
+            name: string;
+            gender: string;
+            birthDate: Date;
+            birthWeight: number;
+            birthLength: number;
+            asiExclusive: boolean;
+            isVerified: boolean;
+            stuntingRisk: string;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    }>;
+    getSummary(): Promise<{
+        success: boolean;
+        message: string;
+        data: {
+            kaderPerformance: {
+                namaKader: string;
+                jumlahIbuDibina: number;
+            }[];
+            overview: {
+                totalUsers: number;
+                totalAnak: number;
+                totalIbu: number;
+                totalKader: number;
+            };
+            stuntingDistribution: {
+                status: string;
+                count: number;
+            }[];
+            recentRegistrations: {
+                name: string;
+                createdAt: Date;
+                email: string;
+            }[];
+        };
+    }>;
+}
