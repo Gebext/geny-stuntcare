@@ -106,6 +106,13 @@ let UserRepository = class UserRepository {
             return user;
         });
     }
+    async findMany(params) {
+        const users = await this.prisma.user.findMany({
+            ...params,
+            select: this.getUserSelect(),
+        });
+        return users;
+    }
     async findManyAndCount(params) {
         const { skip, take, where, orderBy } = params;
         const [users, totalCount] = await this.prisma.$transaction([

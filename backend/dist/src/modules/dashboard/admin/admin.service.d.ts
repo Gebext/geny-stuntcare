@@ -15,8 +15,8 @@ export declare class AdminDashboardService {
         }[];
         recentRegistrations: {
             name: string;
-            createdAt: Date;
             email: string;
+            createdAt: Date;
         }[];
     }>;
     getKaderPerformance(): Promise<{
@@ -32,6 +32,21 @@ export declare class AdminDashboardService {
         isVerified?: string;
     }): Promise<{
         list: ({
+            aiAnalysis: {
+                id: string;
+                childId: string;
+                score: number;
+                status: string;
+                summary: string;
+                weightScore: number;
+                heightScore: number;
+                nutritionScore: number;
+                sanitationScore: number;
+                immunizationScore: number;
+                recommendations: import(".prisma/client").Prisma.JsonValue;
+                createdAt: Date;
+                updatedAt: Date;
+            };
             mother: {
                 user: {
                     name: string;
@@ -60,21 +75,6 @@ export declare class AdminDashboardService {
                 verified: boolean;
                 createdAt: Date;
             }[];
-            aiAnalysis: {
-                id: string;
-                childId: string;
-                score: number;
-                status: string;
-                summary: string;
-                weightScore: number;
-                heightScore: number;
-                nutritionScore: number;
-                sanitationScore: number;
-                immunizationScore: number;
-                recommendations: import(".prisma/client").Prisma.JsonValue;
-                createdAt: Date;
-                updatedAt: Date;
-            };
         } & {
             id: string;
             motherId: string;
@@ -97,6 +97,21 @@ export declare class AdminDashboardService {
         };
     }>;
     getChildById(id: string): Promise<{
+        aiAnalysis: {
+            id: string;
+            childId: string;
+            score: number;
+            status: string;
+            summary: string;
+            weightScore: number;
+            heightScore: number;
+            nutritionScore: number;
+            sanitationScore: number;
+            immunizationScore: number;
+            recommendations: import(".prisma/client").Prisma.JsonValue;
+            createdAt: Date;
+            updatedAt: Date;
+        };
         mother: {
             user: {
                 id: string;
@@ -161,21 +176,6 @@ export declare class AdminDashboardService {
             diagnosisDate: Date;
             isChronic: boolean;
         }[];
-        aiAnalysis: {
-            id: string;
-            childId: string;
-            score: number;
-            status: string;
-            summary: string;
-            weightScore: number;
-            heightScore: number;
-            nutritionScore: number;
-            sanitationScore: number;
-            immunizationScore: number;
-            recommendations: import(".prisma/client").Prisma.JsonValue;
-            createdAt: Date;
-            updatedAt: Date;
-        };
     } & {
         id: string;
         motherId: string;

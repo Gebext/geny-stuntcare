@@ -19,7 +19,7 @@ async function bootstrap() {
     }));
     app.useGlobalInterceptors(new response_wrapper_interceptor_1.ResponseWrapperInterceptor());
     app.useGlobalFilters(new http_exception_filter_1.HttpExceptionFilter());
-    await app.listen(3000);
+    await app.listen(3000, '0.0.0.0');
     console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

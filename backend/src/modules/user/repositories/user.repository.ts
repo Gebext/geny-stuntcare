@@ -110,6 +110,15 @@ export class UserRepository {
     });
   }
 
+  async findMany(params: Prisma.UserFindManyArgs): Promise<UserWithoutHash[]> {
+    const users = await this.prisma.user.findMany({
+      ...params,
+      select: this.getUserSelect(),
+    });
+
+    return users as unknown as UserWithoutHash[];
+  }
+
   async findManyAndCount(params: {
     skip?: number;
     take?: number;

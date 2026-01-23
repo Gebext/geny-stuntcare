@@ -72,7 +72,18 @@ export default function ChildDetailPage() {
   );
 
   const onSave = (values: any) => {
-    mutation.mutate(values, {
+    // Logic tambahan untuk handle payload API yang ketat tanpa merubah desain
+    const payload = { ...values };
+
+    if (activeTab === "nutrition") {
+      payload.frequencyPerDay = Number(payload.frequencyPerDay);
+      // Memenuhi syarat API: recordedAt harus ISO String
+      payload.recordedAt = payload.recordedAt
+        ? new Date(payload.recordedAt).toISOString()
+        : new Date().toISOString();
+    }
+
+    mutation.mutate(payload, {
       onSuccess: () => {
         reset();
         toast({
@@ -173,7 +184,7 @@ export default function ChildDetailPage() {
           </div>
         </div>
 
-        {/* TABS NAVIGATION - FIXED RESPONSIVE LOGIC */}
+        {/* TABS NAVIGATION */}
         <div className="bg-white p-2 rounded-[25px] md:rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="flex overflow-x-auto no-scrollbar gap-2 snap-x">
             {tabs.map((tab) => (
@@ -201,7 +212,6 @@ export default function ChildDetailPage() {
 
         {/* MAIN CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          {/* FORM SECTION */}
           <form
             onSubmit={handleSubmit(onSave)}
             className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[35px] border border-slate-100 shadow-sm lg:sticky lg:top-8"
@@ -281,7 +291,6 @@ export default function ChildDetailPage() {
   );
 }
 
-// --- VISUALIZATION COMPONENT ---
 function KMSChart({ data }: { data: any[] }) {
   const chartData = useMemo(() => {
     if (!data.length) return [];
@@ -356,7 +365,6 @@ function KMSChart({ data }: { data: any[] }) {
   );
 }
 
-// --- HELPER SUB-COMPONENTS ---
 function HistoryCard({ item, type }: { item: any; type: ActivityType }) {
   let title = "-";
   let sub = "-";
@@ -469,7 +477,6 @@ function InputField({ label, name, register, icon, ...props }: any) {
   );
 }
 
-// --- FORM FIELDS COMPONENTS ---
 function AnthropometryFields({ register }: any) {
   return (
     <div className="space-y-4">
@@ -525,6 +532,15 @@ function ImmunizationFields({ register }: any) {
 function NutritionFields({ register }: any) {
   return (
     <div className="space-y-4">
+      {/* Input Tanggal untuk recordedAt agar API tidak error */}
+      <InputField
+        label="Tanggal Pencatatan"
+        name="recordedAt"
+        register={register}
+        type="date"
+        defaultValue={new Date().toISOString().split("T")[0]}
+        icon={<Calendar className="w-4 h-4" />}
+      />
       <InputField
         label="Jenis Makanan"
         name="foodType"

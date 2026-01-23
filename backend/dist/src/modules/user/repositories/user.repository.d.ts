@@ -10,6 +10,7 @@ export declare class UserRepository {
     findOneById(id: string): Promise<UserWithoutHash | null>;
     update(id: string, data: any): Promise<UserWithoutHash>;
     remove(id: string): Promise<UserWithoutHash>;
+    findMany(params: Prisma.UserFindManyArgs): Promise<UserWithoutHash[]>;
     findManyAndCount(params: {
         skip?: number;
         take?: number;

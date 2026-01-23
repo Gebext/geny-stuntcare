@@ -80,11 +80,11 @@ export default function MotherChildrenPage() {
             <Baby className="w-6 h-6 md:w-8 md:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight uppercase">
               Daftar Buah Hati
             </h1>
             <p className="text-teal-50/80 text-[11px] md:text-sm font-medium mt-1">
-              Daftarkan dan pantau tumbuh kembang si kecil secara real-time.
+              Registrasi dan pantau tumbuh kembang si kecil.
             </p>
           </div>
         </header>
@@ -95,7 +95,7 @@ export default function MotherChildrenPage() {
             <div className="w-8 h-8 md:w-10 md:h-10 bg-teal-50 text-[#3AC4B6] rounded-lg md:rounded-xl flex items-center justify-center">
               <Plus className="w-5 h-5 md:w-6 h-6" />
             </div>
-            <h2 className="font-bold text-slate-700 text-base md:text-lg">
+            <h2 className="font-black text-slate-700 text-base md:text-lg uppercase tracking-tight">
               Tambah Anak Baru
             </h2>
           </div>
@@ -107,7 +107,7 @@ export default function MotherChildrenPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-5 md:gap-y-6">
               {/* Nama Lengkap */}
               <div className="space-y-2">
-                <label className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
                   Nama Lengkap
                 </label>
                 <input
@@ -116,12 +116,12 @@ export default function MotherChildrenPage() {
                   className={cn(
                     "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-5 md:px-6 py-3.5 md:py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
                     errors.name
-                      ? "border-rose-400"
+                      ? "border-rose-400 bg-rose-50/30"
                       : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                   )}
                 />
                 {errors.name && (
-                  <p className="text-[10px] text-rose-500 font-bold ml-2 flex items-center gap-1">
+                  <p className="text-[10px] text-rose-500 font-black ml-2 flex items-center gap-1 animate-in slide-in-from-top-1">
                     <AlertCircle className="w-3 h-3" /> {errors.name.message}
                   </p>
                 )}
@@ -129,7 +129,7 @@ export default function MotherChildrenPage() {
 
               {/* Tanggal Lahir */}
               <div className="space-y-2">
-                <label className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
                   Tanggal Lahir
                 </label>
                 <input
@@ -138,12 +138,12 @@ export default function MotherChildrenPage() {
                   className={cn(
                     "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-5 md:px-6 py-3.5 md:py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
                     errors.birthDate
-                      ? "border-rose-400"
+                      ? "border-rose-400 bg-rose-50/30"
                       : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                   )}
                 />
                 {errors.birthDate && (
-                  <p className="text-[10px] text-rose-500 font-bold ml-2 flex items-center gap-1">
+                  <p className="text-[10px] text-rose-500 font-black ml-2 flex items-center gap-1 animate-in slide-in-from-top-1">
                     <AlertCircle className="w-3 h-3" />{" "}
                     {errors.birthDate.message}
                   </p>
@@ -153,7 +153,7 @@ export default function MotherChildrenPage() {
               {/* ASI & Gender */}
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
                     ASI Eksklusif
                   </label>
                   <div className="h-[52px] md:h-[62px] bg-slate-50 rounded-[18px] md:rounded-[22px] flex items-center justify-between px-4 md:px-6 border-2 border-transparent">
@@ -173,23 +173,34 @@ export default function MotherChildrenPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
                     Jenis Kelamin
                   </label>
                   <select
                     {...register("gender")}
-                    className="w-full h-[52px] md:h-[62px] bg-slate-50 border-2 border-transparent focus:border-[#3AC4B6]/20 rounded-[18px] md:rounded-[22px] px-4 md:px-6 text-sm font-bold text-slate-700 outline-none cursor-pointer"
+                    className={cn(
+                      "w-full h-[52px] md:h-[62px] bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-4 md:px-6 text-sm font-bold text-slate-700 outline-none cursor-pointer appearance-none transition-all",
+                      errors.gender
+                        ? "border-rose-400 bg-rose-50/30"
+                        : "border-transparent focus:border-[#3AC4B6]/20",
+                    )}
                   >
                     <option value="L">Laki-laki</option>
                     <option value="P">Perempuan</option>
                   </select>
+                  {errors.gender && (
+                    <p className="text-[10px] text-rose-500 font-black ml-2 mt-1 flex items-center gap-1 animate-in slide-in-from-top-1">
+                      <AlertCircle className="w-3 h-3" />{" "}
+                      {errors.gender.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Berat & Panjang */}
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                  <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                     <Scale className="w-3 h-3" /> Berat (kg)
                   </label>
                   <div className="relative">
@@ -200,17 +211,23 @@ export default function MotherChildrenPage() {
                       className={cn(
                         "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-5 md:px-6 py-3.5 md:py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
                         errors.birthWeight
-                          ? "border-rose-400"
+                          ? "border-rose-400 bg-rose-50/30"
                           : "border-transparent focus:border-[#3AC4B6]/20",
                       )}
                     />
-                    <span className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-[10px] md:text-xs">
+                    <span className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px] md:text-xs">
                       kg
                     </span>
                   </div>
+                  {errors.birthWeight && (
+                    <p className="text-[10px] text-rose-500 font-black ml-2 flex items-center gap-1 animate-in slide-in-from-top-1">
+                      <AlertCircle className="w-3 h-3" />{" "}
+                      {errors.birthWeight.message}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                  <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                     <Ruler className="w-3 h-3" /> Panjang (cm)
                   </label>
                   <div className="relative">
@@ -221,14 +238,20 @@ export default function MotherChildrenPage() {
                       className={cn(
                         "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-5 md:px-6 py-3.5 md:py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
                         errors.birthLength
-                          ? "border-rose-400"
+                          ? "border-rose-400 bg-rose-50/30"
                           : "border-transparent focus:border-[#3AC4B6]/20",
                       )}
                     />
-                    <span className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-[10px] md:text-xs">
+                    <span className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px] md:text-xs">
                       cm
                     </span>
                   </div>
+                  {errors.birthLength && (
+                    <p className="text-[10px] text-rose-500 font-black ml-2 flex items-center gap-1 animate-in slide-in-from-top-1">
+                      <AlertCircle className="w-3 h-3" />{" "}
+                      {errors.birthLength.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -236,7 +259,7 @@ export default function MotherChildrenPage() {
             <button
               type="submit"
               disabled={addChildMutation.isPending}
-              className="w-full bg-[#3AC4B6] text-white py-4 md:py-5 rounded-[18px] md:rounded-[22px] font-bold hover:bg-[#2DA89B] shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 text-sm"
+              className="w-full bg-[#3AC4B6] text-white py-4 md:py-5 rounded-[18px] md:rounded-[22px] font-black uppercase tracking-[0.2em] hover:bg-[#2DA89B] shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 text-xs"
             >
               {addChildMutation.isPending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -248,27 +271,23 @@ export default function MotherChildrenPage() {
           </form>
         </div>
 
-        {/* BOTTOM SECTION */}
+        {/* BOTTOM LIST SECTION */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Total Stats Card */}
           <div className="bg-[#ECF7F6] p-6 md:p-8 rounded-[30px] md:rounded-[35px] border border-teal-50 flex flex-row lg:flex-col items-center justify-between lg:justify-center text-center gap-4">
-            <div className="flex items-center lg:flex-col gap-4 lg:gap-0">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl flex items-center justify-center mb-0 lg:mb-4 text-[#3AC4B6] shadow-sm shrink-0">
-                <CheckCircle2Icon className="w-5 h-5 md:w-6 h-6" />
-              </div>
-              <p className="text-[10px] md:text-[11px] font-bold text-[#3AC4B6] uppercase tracking-widest text-left lg:text-center">
-                Total Anak Terdaftar
-              </p>
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#3AC4B6] shadow-sm shrink-0">
+              <Baby className="w-6 h-6" />
             </div>
-            <h3 className="text-3xl md:text-5xl font-black text-[#3AC4B6]">
-              {childProfiles?.length || 0}
-            </h3>
+            <p className="text-[10px] md:text-[11px] font-black text-[#3AC4B6] uppercase tracking-widest">
+              Total Terdaftar:{" "}
+              <span className="text-xl md:text-3xl ml-2">
+                {childProfiles?.length || 0}
+              </span>
+            </p>
           </div>
 
-          {/* Child Preview Cards */}
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {childProfiles?.length === 0 ? (
-              <div className="col-span-full bg-slate-50 rounded-[25px] md:rounded-[30px] flex items-center justify-center border-2 border-dashed border-slate-200 text-slate-400 font-bold uppercase text-[9px] md:text-[10px] tracking-widest p-8 md:p-10">
+              <div className="col-span-full bg-slate-50 rounded-[25px] flex items-center justify-center border-2 border-dashed border-slate-200 text-slate-400 font-black uppercase text-[10px] tracking-widest p-10">
                 Belum ada data anak
               </div>
             ) : (
@@ -276,12 +295,12 @@ export default function MotherChildrenPage() {
                 <Link
                   href={`/dashboard/mother/child/${child.id}`}
                   key={child.id}
-                  className="bg-white p-5 md:p-6 rounded-[25px] md:rounded-[30px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-[#3AC4B6]/30 transition-all cursor-pointer active:scale-[0.98]"
+                  className="bg-white p-5 md:p-6 rounded-[25px] md:rounded-[30px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-[#3AC4B6]/30 transition-all active:scale-[0.98]"
                 >
-                  <div className="flex items-center gap-4 min-w-0">
+                  <div className="flex items-center gap-4 truncate">
                     <div
                       className={cn(
-                        "shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center",
+                        "shrink-0 w-10 h-10 rounded-xl flex items-center justify-center",
                         child.gender === "L"
                           ? "bg-blue-50 text-blue-500"
                           : "bg-pink-50 text-pink-500",
@@ -290,10 +309,10 @@ export default function MotherChildrenPage() {
                       <User className="w-5 h-5" />
                     </div>
                     <div className="truncate">
-                      <h4 className="font-bold text-slate-700 text-sm truncate">
+                      <h4 className="font-black text-slate-700 text-sm uppercase truncate">
                         {child.name}
                       </h4>
-                      <p className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase">
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">
                         {child.gender === "L" ? "Laki-laki" : "Perempuan"}
                       </p>
                     </div>
@@ -306,25 +325,5 @@ export default function MotherChildrenPage() {
         </div>
       </div>
     </RoleGuard>
-  );
-}
-
-function CheckCircle2Icon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
   );
 }

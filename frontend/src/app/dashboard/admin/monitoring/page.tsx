@@ -49,6 +49,8 @@ export default function MonitoringPage() {
     }
   };
 
+  
+
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-700">
       {/* HEADER SECTION */}
