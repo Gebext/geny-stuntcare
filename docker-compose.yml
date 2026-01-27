@@ -3,7 +3,6 @@ version: "3.9"
 services:
   db:
     image: postgres:18-alpine
-    # container_name dihapus agar Coolify bisa manage scaling kalau butuh
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -19,8 +18,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile.backend
     restart: unless-stopped
-    # Di Production, kita pakai 'migrate deploy' agar aman.
-    # Tapi kalau lo mau otomatis kayak di lokal, pakai ini:
+    # Pastikan DATABASE_URL di Coolify mengarah ke 'db:5432'
     command: sh -c "npx prisma db push && npx prisma db seed && npm run start:prod"
     depends_on:
       - db
@@ -28,21 +26,29 @@ services:
       DATABASE_URL: ${DATABASE_URL}
     networks:
       - endence
-    # Port mapping biasanya diatur di UI Coolify, tapi biarin buat internal
+    # Tambahkan label agar Coolify tahu ini port 3000
+    labels:
+      - "coolify.managed=true"
+    expose:
+      - "3000"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.frontend
     restart: unless-stopped
-    # DI PRODUCTION HARUS BUILD DULU
-    command: sh -c "npm run build && npm run start"
+    # Hapus 'npm run build' dari command karena sudah ada di Dockerfile
+    command: npm run start
     depends_on:
       - backend
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     networks:
       - endence
+    labels:
+      - "coolify.managed=true"
+    expose:
+      - "3000"
 
 volumes:
   postgres_data:
