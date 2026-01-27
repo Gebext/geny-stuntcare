@@ -14,9 +14,13 @@ import { EnvironmentModule } from './modules/environment/environment.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AiModule } from './modules/ai/ai.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [
+    // Tambahkan .register() di sini agar endpoint /metrics aktif secara otomatis
+    PrometheusModule.register(),
+
     PrismaModule,
     UserModule,
     AuthModule,

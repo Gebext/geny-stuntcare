@@ -12,11 +12,17 @@ const operators_1 = require("rxjs/operators");
 let ResponseWrapperInterceptor = class ResponseWrapperInterceptor {
     intercept(context, next) {
         const request = context.switchToHttp().getRequest();
+        if (request.url.includes('/metrics')) {
+            return next.handle();
+        }
         const httpStatus = context.switchToHttp().getResponse().statusCode;
         let defaultMessage;
         switch (request.method) {
             case 'POST':
-                defaultMessage = httpStatus === common_1.HttpStatus.CREATED ? 'Resource created successfully.' : 'Request processed successfully.';
+                defaultMessage =
+                    httpStatus === common_1.HttpStatus.CREATED
+                        ? 'Resource created successfully.'
+                        : 'Request processed successfully.';
                 break;
             case 'PATCH':
                 defaultMessage = 'Resource updated successfully.';
@@ -29,7 +35,7 @@ let ResponseWrapperInterceptor = class ResponseWrapperInterceptor {
                 defaultMessage = 'Data retrieved successfully.';
                 break;
         }
-        return next.handle().pipe((0, operators_1.map)(data => ({
+        return next.handle().pipe((0, operators_1.map)((data) => ({
             success: true,
             message: defaultMessage,
             data: data || {},

@@ -2,7 +2,7 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://192.168.118.150:3000/",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://192.168.1.9:3000/",
 });
 
 api.interceptors.request.use((config) => {

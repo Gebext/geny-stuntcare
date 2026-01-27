@@ -34,9 +34,8 @@ services:
       - backend/.env
     volumes:
       - ./backend:/usr/src/app
-      # - /usr/src/app/node_modules
     ports:
-      - "3000:3000" # backend API
+      - "3000:3000"
     networks:
       - endence
 
@@ -50,15 +49,16 @@ services:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
     ports:
-      - "4000:3000" # frontend Next.js
+      - "4000:3000"
     depends_on:
       - backend
     networks:
       - endence
+    # Perbaikan di sini: Digabung dengan environment dari base agar tidak error
     environment:
-  - NEXT_PUBLIC_API_URL=http://localhost:4000
-  - API_INTERNAL_URL=http://backend:4000
-
+      TZ: "Europe/Paris"
+      NEXT_PUBLIC_API_URL: "http://localhost:4000"
+      API_INTERNAL_URL: "http://backend:4000"
 
   studio:
     <<: *service-base
@@ -79,6 +79,25 @@ services:
     env_file:
       - ./backend/.env
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - endence
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    networks:
+      - endence
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
 
 networks:
   endence:

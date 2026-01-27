@@ -23,12 +23,14 @@ const environment_module_1 = require("./modules/environment/environment.module")
 const chat_module_1 = require("./modules/chat/chat.module");
 const ai_module_1 = require("./modules/ai/ai.module");
 const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
+const nestjs_prometheus_1 = require("@willsoto/nestjs-prometheus");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            nestjs_prometheus_1.PrometheusModule.register(),
             prisma_module_1.PrismaModule,
             user_module_1.UserModule,
             auth_module_1.AuthModule,
