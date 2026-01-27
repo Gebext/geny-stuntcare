@@ -1,19 +1,14 @@
-FROM node:16.20.2
+FROM node:20-alpine
+# Install dependencies yang mungkin butuh build tools (opsional tapi aman)
+RUN apk add --no-cache libc6-compat
 
 WORKDIR /usr/src/app
 
-# Install dependencies
 COPY package*.json ./
+# Pake --legacy-peer-deps biar gak konflik sama versi React/Next lo
 RUN npm install --legacy-peer-deps
 
-# Copy source
 COPY . .
 
-# Disable telemetry
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Expose port
 EXPOSE 3000
-
-# Start Next.js
-CMD ["npm", "run", "dev"]
+# Biarkan command dihandle docker-compose

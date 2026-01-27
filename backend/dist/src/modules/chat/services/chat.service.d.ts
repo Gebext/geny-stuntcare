@@ -8,20 +8,8 @@ export declare class ChatService {
     handleMessage(userId: string, dto: SendMessageDto): Promise<{
         sessionId: any;
         modelUsed: string;
-        message: {
-            id: string;
-            sessionId: string;
-            sender: string;
-            message: string;
-            createdAt: Date;
-        };
+        message: any;
     }>;
     private callGeminiWithFallback;
-    getSessionHistory(sessionId: string): Promise<{
-        id: string;
-        sessionId: string;
-        sender: string;
-        message: string;
-        createdAt: Date;
-    }[]>;
+    getSessionHistory(sessionId: string): Promise<any>;
 }

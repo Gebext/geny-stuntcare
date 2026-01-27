@@ -9,24 +9,26 @@ services:
       POSTGRES_USER: geny_stunt
       POSTGRES_PASSWORD: securepassword123
       POSTGRES_DB: geny_stunt_db
-      TZ: "Europe/Paris"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - endence
-    volumes:
-      - db-data:/var/lib/postgresql/data
 
   backend:
     container_name: backend
-    restart: unless-stopped
-    command: sh -c "npx prisma generate && npm run start:dev"
     build:
-      context: .
-      dockerfile: backend/Dockerfile.backend
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    restart: unless-stopped
+    # Injeksi DATABASE_URL langsung sebelum command prisma
+    command: >
+      sh -c "DATABASE_URL=postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public npx prisma db push && 
+             DATABASE_URL=postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public npx prisma db seed && 
+             npm run start:dev"
     depends_on:
       - db
     environment:
       DATABASE_URL: "postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public"
-      TZ: "Europe/Paris"
     ports:
       - "3000:3000"
     networks:
@@ -34,40 +36,21 @@ services:
 
   frontend:
     container_name: frontend
-    restart: unless-stopped
     build:
-      context: .
-      dockerfile: frontend/Dockerfile.frontend
-    ports:
-      - "4000:3000"
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    restart: unless-stopped
+    # Pakai npm run dev sesuai script di package.json lo
+    command: npm run dev
     depends_on:
       - backend
+    ports:
+      - "4000:3000"
     networks:
       - endence
-    environment:
-      TZ: "Europe/Paris"
-      NEXT_PUBLIC_API_URL: "https://api.genystuntcare.cloud"
-      API_INTERNAL_URL: "http://backend:3000"
 
-studio:
-  container_name: prisma_studio
-  restart: unless-stopped
-  # Pakai image yang udah jadi dari backend biar nggak build ulang
-  image: fckggko4o4w4gcg0wwg08048_backend
-  command: npx prisma studio --port 5555
-  depends_on:
-    - backend
-  environment:
-    DATABASE_URL: "postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public"
-  ports:
-    - "5556:5555"
-  networks:
-    - endence
-
+volumes:
+  postgres_data:
 networks:
   endence:
     driver: bridge
-
-volumes:
-  db-data:
-    driver: local

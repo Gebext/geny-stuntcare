@@ -6,19 +6,7 @@ export declare class ChatController {
     sendMessage(req: any, dto: SendMessageDto): Promise<{
         sessionId: any;
         modelUsed: string;
-        message: {
-            id: string;
-            sessionId: string;
-            sender: string;
-            message: string;
-            createdAt: Date;
-        };
+        message: any;
     }>;
-    getHistory(sessionId: string): Promise<{
-        id: string;
-        sessionId: string;
-        sender: string;
-        message: string;
-        createdAt: Date;
-    }[]>;
+    getHistory(sessionId: string): Promise<any>;
 }

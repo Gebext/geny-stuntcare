@@ -1,16 +1,15 @@
-FROM node:16.20.2
-
+FROM node:20-alpine
+RUN apk add --no-cache openssl
 WORKDIR /usr/src/app
 
-# Install dependencies
+# Copy package dulu biar cache layer efisien
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
-# Copy source
+# Copy sisa file termasuk folder prisma
 COPY . .
 
-# Expose ports
-EXPOSE 3000 5555
+# Generate client saat build
+RUN npx prisma generate --schema ./prisma/schema.prisma
 
-# Langsung jalanin, biarin Docker yang atur user default (root)
-CMD ["npm", "run", "start:dev"]
+EXPOSE 3000

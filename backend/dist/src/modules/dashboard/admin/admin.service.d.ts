@@ -4,25 +4,15 @@ export declare class AdminDashboardService {
     constructor(prisma: PrismaService);
     getMainStats(): Promise<{
         overview: {
-            totalUsers: number;
-            totalAnak: number;
-            totalIbu: number;
-            totalKader: number;
+            totalUsers: any;
+            totalAnak: any;
+            totalIbu: any;
+            totalKader: any;
         };
-        stuntingDistribution: {
-            status: string;
-            count: number;
-        }[];
-        recentRegistrations: {
-            name: string;
-            email: string;
-            createdAt: Date;
-        }[];
+        stuntingDistribution: any;
+        recentRegistrations: any;
     }>;
-    getKaderPerformance(): Promise<{
-        namaKader: string;
-        jumlahIbuDibina: number;
-    }[]>;
+    getKaderPerformance(): Promise<any>;
     getAllChildren(query: {
         page?: any;
         limit?: any;
@@ -31,163 +21,13 @@ export declare class AdminDashboardService {
         gender?: string;
         isVerified?: string;
     }): Promise<{
-        list: ({
-            aiAnalysis: {
-                id: string;
-                childId: string;
-                score: number;
-                status: string;
-                summary: string;
-                weightScore: number;
-                heightScore: number;
-                nutritionScore: number;
-                sanitationScore: number;
-                immunizationScore: number;
-                recommendations: import(".prisma/client").Prisma.JsonValue;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-            mother: {
-                user: {
-                    name: string;
-                    phone: string;
-                };
-            } & {
-                id: string;
-                userId: string;
-                age: number;
-                heightCm: number;
-                weightKg: number;
-                lilaCm: number;
-                isPregnant: boolean;
-                trimester: number;
-                ttdCompliance: string;
-                createdAt: Date;
-            };
-            anthropometries: {
-                id: string;
-                childId: string;
-                weightKg: number;
-                heightCm: number;
-                ageMonth: number;
-                measuredBy: string;
-                measurementDate: Date;
-                verified: boolean;
-                createdAt: Date;
-            }[];
-        } & {
-            id: string;
-            motherId: string;
-            name: string;
-            gender: string;
-            birthDate: Date;
-            birthWeight: number;
-            birthLength: number;
-            asiExclusive: boolean;
-            isVerified: boolean;
-            stuntingRisk: string;
-            createdAt: Date;
-            updatedAt: Date;
-        })[];
+        list: any;
         meta: {
-            total: number;
+            total: any;
             page: number;
             limit: number;
             totalPages: number;
         };
     }>;
-    getChildById(id: string): Promise<{
-        aiAnalysis: {
-            id: string;
-            childId: string;
-            score: number;
-            status: string;
-            summary: string;
-            weightScore: number;
-            heightScore: number;
-            nutritionScore: number;
-            sanitationScore: number;
-            immunizationScore: number;
-            recommendations: import(".prisma/client").Prisma.JsonValue;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-        mother: {
-            user: {
-                id: string;
-                name: string;
-                email: string;
-                passwordHash: string;
-                phone: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-            environment: {
-                id: string;
-                motherId: string;
-                cleanWater: boolean;
-                sanitation: string;
-                distanceFaskesKm: number;
-                transportation: string;
-            };
-        } & {
-            id: string;
-            userId: string;
-            age: number;
-            heightCm: number;
-            weightKg: number;
-            lilaCm: number;
-            isPregnant: boolean;
-            trimester: number;
-            ttdCompliance: string;
-            createdAt: Date;
-        };
-        anthropometries: {
-            id: string;
-            childId: string;
-            weightKg: number;
-            heightCm: number;
-            ageMonth: number;
-            measuredBy: string;
-            measurementDate: Date;
-            verified: boolean;
-            createdAt: Date;
-        }[];
-        immunizations: {
-            id: string;
-            childId: string;
-            vaccineName: string;
-            status: string;
-            dateGiven: Date;
-        }[];
-        nutritionHistories: {
-            id: string;
-            childId: string;
-            foodType: string;
-            frequencyPerDay: number;
-            proteinSource: string;
-            recordedAt: Date;
-        }[];
-        healthHistories: {
-            id: string;
-            childId: string;
-            diseaseName: string;
-            diagnosisDate: Date;
-            isChronic: boolean;
-        }[];
-    } & {
-        id: string;
-        motherId: string;
-        name: string;
-        gender: string;
-        birthDate: Date;
-        birthWeight: number;
-        birthLength: number;
-        asiExclusive: boolean;
-        isVerified: boolean;
-        stuntingRisk: string;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    getChildById(id: string): Promise<any>;
 }
