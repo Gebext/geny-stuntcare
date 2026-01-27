@@ -49,22 +49,20 @@ services:
       NEXT_PUBLIC_API_URL: "https://api.genystuntcare.cloud"
       API_INTERNAL_URL: "http://backend:3000"
 
-  studio:
-    container_name: prisma_studio
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: backend/Dockerfile.backend
-    command: npx prisma studio --port 5555
-    depends_on:
-      - backend
-    environment:
-      DATABASE_URL: "postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public"
-      TZ: "Europe/Paris"
-    ports:
-      - "5556:5555"
-    networks:
-      - endence
+studio:
+  container_name: prisma_studio
+  restart: unless-stopped
+  # Pakai image yang udah jadi dari backend biar nggak build ulang
+  image: fckggko4o4w4gcg0wwg08048_backend
+  command: npx prisma studio --port 5555
+  depends_on:
+    - backend
+  environment:
+    DATABASE_URL: "postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public"
+  ports:
+    - "5556:5555"
+  networks:
+    - endence
 
 networks:
   endence:
