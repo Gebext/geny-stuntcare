@@ -178,7 +178,7 @@ export default function MotherAnalysisDetailPage() {
                   Laporan Gizi Pintar
                 </h2>
                 <p className="text-slate-500 text-lg leading-relaxed font-medium ">
-                  "{analysis?.summary}"
+                  &quot;{analysis?.summary}&quot;
                 </p>
               </div>
             </div>
