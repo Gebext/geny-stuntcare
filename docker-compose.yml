@@ -3,49 +3,44 @@ version: "3.9"
 services:
   db:
     image: postgres:18-alpine
-    container_name: db
+    # container_name dihapus agar Coolify bisa manage scaling kalau butuh
     restart: unless-stopped
     environment:
-      POSTGRES_USER: geny_stunt
-      POSTGRES_PASSWORD: securepassword123
-      POSTGRES_DB: geny_stunt_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - endence
 
   backend:
-    container_name: backend
     build:
       context: ./backend
       dockerfile: Dockerfile.backend
     restart: unless-stopped
-    # Injeksi DATABASE_URL langsung sebelum command prisma
-    command: >
-      sh -c "DATABASE_URL=postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public npx prisma db push && 
-             DATABASE_URL=postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public npx prisma db seed && 
-             npm run start:dev"
+    # Di Production, kita pakai 'migrate deploy' agar aman.
+    # Tapi kalau lo mau otomatis kayak di lokal, pakai ini:
+    command: sh -c "npx prisma db push && npx prisma db seed && npm run start:prod"
     depends_on:
       - db
     environment:
-      DATABASE_URL: "postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public"
-    ports:
-      - "3000:3000"
+      DATABASE_URL: ${DATABASE_URL}
     networks:
       - endence
+    # Port mapping biasanya diatur di UI Coolify, tapi biarin buat internal
 
   frontend:
-    container_name: frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile.frontend
     restart: unless-stopped
-    # Pakai npm run dev sesuai script di package.json lo
-    command: npm run dev
+    # DI PRODUCTION HARUS BUILD DULU
+    command: sh -c "npm run build && npm run start"
     depends_on:
       - backend
-    ports:
-      - "4000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     networks:
       - endence
 
