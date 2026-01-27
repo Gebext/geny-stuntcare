@@ -2,19 +2,22 @@ FROM node:16.20.2
 
 WORKDIR /usr/src/app
 
-# Install dependencies
+# Copy package files dulu
 COPY package*.json ./
+
+# Install dependencies (sebagai root, bawaan Docker)
 RUN npm install
 
-# Copy source
+# Copy semua source code
 COPY . .
 
-# Expose ports
+# Expose port
 EXPOSE 3000 5555
 
-USER root
-RUN chown -R node:node /usr/src/app/node_modules
-USER node
+# --- PERBAIKAN DI SINI ---
+# Kita hapus blok USER node dan chown yang bikin gagal tadi.
+# Kita pakai chmod saja agar permission folder terbuka tapi tidak ganti owner.
+RUN chmod -R 777 /usr/src/app/node_modules
 
-# Start backend
+# Kita biarkan jalan sebagai default (root) agar tidak bentrok dengan permission VPS Coolify
 CMD ["npm", "run", "start:dev"]
