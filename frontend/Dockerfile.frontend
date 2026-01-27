@@ -1,14 +1,13 @@
 FROM node:20-alpine
-# Install dependencies yang mungkin butuh build tools (opsional tapi aman)
 RUN apk add --no-cache libc6-compat
-
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-# Pake --legacy-peer-deps biar gak konflik sama versi React/Next lo
 RUN npm install --legacy-peer-deps
 
 COPY . .
 
+# Tambahkan baris build ini!
+RUN npm run build
+
 EXPOSE 3000
-# Biarkan command dihandle docker-compose
