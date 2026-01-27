@@ -1,16 +1,5 @@
 version: "3.9"
 
-x-service-base: &service-base
-  init: true
-  restart: unless-stopped
-  environment:
-    TZ: "Europe/Paris"
-
-x-volume-base: &volume-base
-  driver: local
-
-version: "3.9"
-
 services:
   db:
     image: postgres:18-alpine
@@ -20,6 +9,7 @@ services:
       POSTGRES_USER: geny_stunt
       POSTGRES_PASSWORD: securepassword123
       POSTGRES_DB: geny_stunt_db
+      TZ: "Europe/Paris"
     networks:
       - endence
     volumes:
@@ -28,7 +18,6 @@ services:
   backend:
     container_name: backend
     restart: unless-stopped
-    # Generate prisma dulu baru jalanin nest
     command: sh -c "npx prisma generate && npm run start:dev"
     build:
       context: .
@@ -36,8 +25,8 @@ services:
     depends_on:
       - db
     environment:
-      # Langsung tulis string aslinya biar Docker nggak bingung render variabel
       DATABASE_URL: "postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public"
+      TZ: "Europe/Paris"
     ports:
       - "3000:3000"
     networks:
@@ -71,6 +60,7 @@ services:
       - backend
     environment:
       DATABASE_URL: "postgresql://geny_stunt:securepassword123@db:5432/geny_stunt_db?schema=public"
+      TZ: "Europe/Paris"
     ports:
       - "5556:5555"
     networks:
