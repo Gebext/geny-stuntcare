@@ -1,0 +1,27 @@
+{
+  "id": "features",
+  "title": "Fitur-Fitur GENY-StuntCare",
+  "description": "Penjelasan detail tentang semua fitur yang tersedia di GENY-StuntCare.",
+  "source": "@site/docs/features.md",
+  "sourceDirName": ".",
+  "slug": "/features",
+  "permalink": "/features",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/geny-stuntcare/docs/tree/main/docs/features.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Panduan Pengguna GENY-StuntCare",
+    "permalink": "/user-guide"
+  },
+  "next": {
+    "title": "FAQ - Pertanyaan yang Sering Diajukan",
+    "permalink": "/faq"
+  }
+}

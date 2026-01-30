@@ -1,0 +1,24 @@
+{
+  "id": "intro",
+  "title": "GENY-StuntCare Documentation",
+  "description": "Dokumentasi lengkap untuk aplikasi GENY-StuntCare - Sistem digital berbasis AI untuk deteksi dini, pencegahan, dan penanganan risiko stunting.",
+  "source": "@site/docs/intro.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/geny-stuntcare/docs/tree/main/docs/intro.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "slug": "/",
+    "sidebar_position": 1
+  },
+  "sidebar": "docsSidebar",
+  "next": {
+    "title": "Panduan Pengguna GENY-StuntCare",
+    "permalink": "/user-guide"
+  }
+}

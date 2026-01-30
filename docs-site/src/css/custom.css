@@ -1,0 +1,38 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a simple framework built on top of it
+ * that provides a nice default styling. of your website's overall look-and-feel.
+ *
+ * You can override the default Infima variables here.
+ * See https://infima.dev/docs/getting-started/customization
+ */
+
+:root {
+  --ifm-color-primary: #2563eb;
+  --ifm-color-primary-dark: #1d4ed8;
+  --ifm-color-primary-darker: #1e40af;
+  --ifm-color-primary-darkest: #1e3a8a;
+  --ifm-color-primary-light: #3b82f6;
+  --ifm-color-primary-lighter: #60a5fa;
+  --ifm-color-primary-lightest: #93c5fd;
+  --ifm-code-font-size: 95%;
+  --ifm-heading-color: #1f2937;
+}
+
+html[data-theme="dark"] {
+  --ifm-heading-color: #f3f4f6;
+}
+
+/* Styles for custom admonitions */
+.admonition {
+  margin: 1rem 0;
+}
+
+/* Tabs styling */
+.tabs {
+  margin: 1.5rem 0;
+}
+
+.table-of-contents {
+  margin-top: 2rem;
+}

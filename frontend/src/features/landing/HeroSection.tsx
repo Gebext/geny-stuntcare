@@ -46,9 +46,15 @@ export const HeroSection = () => {
                 Mulai Sekarang
                 <ArrowRight className="w-5 h-5" />
               </Button>
-              <Button variant="outline" size="xl">
-                Pelajari Lebih Lanjut
-              </Button>
+              <a
+                href="https://docs.genystuntcare.cloud"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" size="xl">
+                  Pelajari Lebih Lanjut
+                </Button>
+              </a>
             </div>
           </motion.div>
 

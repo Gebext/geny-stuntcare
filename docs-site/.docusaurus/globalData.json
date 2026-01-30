@@ -1,0 +1,53 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "faq",
+              "path": "/faq",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "features",
+              "path": "/features",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "intro",
+              "path": "/",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "troubleshooting",
+              "path": "/troubleshooting",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "user-guide",
+              "path": "/user-guide",
+              "sidebar": "docsSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "docsSidebar": {
+              "link": {
+                "path": "/",
+                "label": "intro"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

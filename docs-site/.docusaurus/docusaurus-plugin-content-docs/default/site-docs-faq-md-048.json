@@ -1,0 +1,27 @@
+{
+  "id": "faq",
+  "title": "FAQ - Pertanyaan yang Sering Diajukan",
+  "description": "Jawaban untuk pertanyaan-pertanyaan yang sering ditanyakan pengguna GENY-StuntCare.",
+  "source": "@site/docs/faq.md",
+  "sourceDirName": ".",
+  "slug": "/faq",
+  "permalink": "/faq",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/geny-stuntcare/docs/tree/main/docs/faq.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Fitur-Fitur GENY-StuntCare",
+    "permalink": "/features"
+  },
+  "next": {
+    "title": "Troubleshooting - Solusi Masalah Umum",
+    "permalink": "/troubleshooting"
+  }
+}

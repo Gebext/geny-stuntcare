@@ -1,0 +1,23 @@
+{
+  "id": "troubleshooting",
+  "title": "Troubleshooting - Solusi Masalah Umum",
+  "description": "Panduan untuk mengatasi masalah-masalah yang mungkin Anda alami saat menggunakan GENY-StuntCare.",
+  "source": "@site/docs/troubleshooting.md",
+  "sourceDirName": ".",
+  "slug": "/troubleshooting",
+  "permalink": "/troubleshooting",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/geny-stuntcare/docs/tree/main/docs/troubleshooting.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "FAQ - Pertanyaan yang Sering Diajukan",
+    "permalink": "/faq"
+  }
+}
