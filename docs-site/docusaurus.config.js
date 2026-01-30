@@ -43,10 +43,6 @@ const config = {
     ({
       navbar: {
         title: "GENY-StuntCare Docs",
-        logo: {
-          alt: "GENY-StuntCare Logo",
-          src: "img/logo.svg",
-        },
         items: [
           {
             type: "docSidebar",

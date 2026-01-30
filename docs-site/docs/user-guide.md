@@ -64,14 +64,6 @@ Dashboard adalah halaman pertama yang Anda lihat setelah login. Di sini Anda dap
 3. Ubah data yang diperlukan
 4. Klik **"Simpan Perubahan"**
 
-### Verifikasi Profil
-
-Untuk akurasi data yang lebih baik, verifikasi profil anak Anda dengan:
-
-- Upload foto KTP/identitas orang tua
-- Verifikasi nomor telepon
-- Konfirmasi alamat
-
 ## Monitoring Pertumbuhan
 
 ### Input Data Antropometri
