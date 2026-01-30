@@ -58,10 +58,20 @@ export default function MotherChildrenPage() {
     },
   });
 
+  const birthDateValue = watch("birthDate");
+  const ageMonths = birthDateValue
+    ? Math.floor(
+        (Date.now() - new Date(birthDateValue).getTime()) /
+          (1000 * 60 * 60 * 24 * 30.436875),
+      )
+    : 0;
+  const isAsiAllowed = !birthDateValue || ageMonths <= 6;
+
   const handleOnSubmit = (values: ChildFormValues) => {
     const payload = {
       ...values,
       birthDate: new Date(values.birthDate).toISOString(),
+      asiExclusive: isAsiAllowed ? values.asiExclusive : false,
     };
 
     addChildMutation.mutate(payload, {
@@ -73,48 +83,48 @@ export default function MotherChildrenPage() {
 
   return (
     <RoleGuard allowedRoles={["mother"]}>
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-6 md:space-y-8 pb-10 px-4 md:px-0">
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-4 md:space-y-8 pb-10 px-4 md:px-0">
         {/* Header - Gradient Teal */}
-        <header className="flex items-center gap-4 md:gap-5 bg-gradient-to-br from-[#3AC4B6] to-[#2DA89B] p-6 md:p-8 rounded-[30px] md:rounded-[35px] text-white shadow-lg shadow-teal-100/50">
-          <div className="shrink-0 w-12 h-12 md:w-16 md:h-16 bg-white/20 backdrop-blur-md rounded-[18px] md:rounded-[22px] flex items-center justify-center border border-white/30">
-            <Baby className="w-6 h-6 md:w-8 md:h-8 text-white" />
+        <header className="flex items-center gap-3 md:gap-5 bg-gradient-to-br from-[#3AC4B6] to-[#2DA89B] p-4 md:p-8 rounded-[30px] md:rounded-[35px] text-white shadow-lg shadow-teal-100/50">
+          <div className="shrink-0 w-10 h-10 md:w-16 md:h-16 bg-white/20 backdrop-blur-md rounded-[18px] md:rounded-[22px] flex items-center justify-center border border-white/30">
+            <Baby className="w-5 h-5 md:w-8 md:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight uppercase">
+            <h1 className="text-lg md:text-2xl font-bold tracking-tight uppercase">
               Daftar Buah Hati
             </h1>
-            <p className="text-teal-50/80 text-[11px] md:text-sm font-medium mt-1">
+            <p className="text-teal-50/80 text-[10px] md:text-sm font-medium mt-0.5">
               Registrasi dan pantau tumbuh kembang si kecil.
             </p>
           </div>
         </header>
 
         {/* FORM SECTION */}
-        <div className="bg-white p-6 md:p-10 rounded-[30px] md:rounded-[35px] border border-slate-100 shadow-sm space-y-6 md:space-y-8">
-          <div className="flex items-center gap-3 border-b border-slate-50 pb-4 md:pb-6">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-teal-50 text-[#3AC4B6] rounded-lg md:rounded-xl flex items-center justify-center">
-              <Plus className="w-5 h-5 md:w-6 h-6" />
+        <div className="bg-white p-4 md:p-10 rounded-[30px] md:rounded-[35px] border border-slate-100 shadow-sm space-y-4 md:space-y-8">
+          <div className="flex items-center gap-2.5 border-b border-slate-50 pb-3 md:pb-6">
+            <div className="w-7 h-7 md:w-10 md:h-10 bg-teal-50 text-[#3AC4B6] rounded-lg md:rounded-xl flex items-center justify-center">
+              <Plus className="w-4 h-4 md:w-6 md:h-6" />
             </div>
-            <h2 className="font-black text-slate-700 text-base md:text-lg uppercase tracking-tight">
+            <h2 className="font-black text-slate-700 text-sm md:text-lg uppercase tracking-tight">
               Tambah Anak Baru
             </h2>
           </div>
 
           <form
             onSubmit={handleSubmit(handleOnSubmit)}
-            className="space-y-6 md:space-y-8"
+            className="space-y-4 md:space-y-8"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-5 md:gap-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-3 md:gap-y-6">
               {/* Nama Lengkap */}
-              <div className="space-y-2">
-                <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+              <div className="space-y-1.5">
+                <label className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
                   Nama Lengkap
                 </label>
                 <input
                   {...register("name")}
                   placeholder="Contoh: Budi Santoso"
                   className={cn(
-                    "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-5 md:px-6 py-3.5 md:py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
+                    "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 outline-none transition-all",
                     errors.name
                       ? "border-rose-400 bg-rose-50/30"
                       : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
@@ -128,15 +138,15 @@ export default function MotherChildrenPage() {
               </div>
 
               {/* Tanggal Lahir */}
-              <div className="space-y-2">
-                <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+              <div className="space-y-1.5 ">
+                <label className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
                   Tanggal Lahir
                 </label>
                 <input
                   {...register("birthDate")}
                   type="date"
                   className={cn(
-                    "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-5 md:px-6 py-3.5 md:py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
+                    "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 outline-none transition-all",
                     errors.birthDate
                       ? "border-rose-400 bg-rose-50/30"
                       : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
@@ -151,16 +161,16 @@ export default function MotherChildrenPage() {
               </div>
 
               {/* ASI & Gender */}
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+              <div className="grid grid-cols-2 gap-2 md:gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
                     ASI Eksklusif
                   </label>
-                  <div className="h-[52px] md:h-[62px] bg-slate-50 rounded-[18px] md:rounded-[22px] flex items-center justify-between px-4 md:px-6 border-2 border-transparent">
+                  <div className="h-[48px] md:h-[62px] bg-slate-50 rounded-[18px] md:rounded-[22px] flex items-center justify-between px-3 md:px-6 border-2 border-transparent">
                     <Heart
                       className={cn(
                         "w-4 h-4 md:w-5 md:h-5 transition-all",
-                        watch("asiExclusive")
+                        watch("asiExclusive") && isAsiAllowed
                           ? "text-rose-500 fill-rose-500 scale-110"
                           : "text-slate-300",
                       )}
@@ -168,18 +178,30 @@ export default function MotherChildrenPage() {
                     <input
                       type="checkbox"
                       {...register("asiExclusive")}
-                      className="w-9 md:w-11 h-5 md:h-6 bg-slate-300 rounded-full appearance-none checked:bg-[#3AC4B6] transition-all cursor-pointer relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:w-3 md:after:w-4 after:h-3 md:after:h-4 after:rounded-full after:transition-all checked:after:left-5 md:checked:after:left-6 shadow-inner"
+                      disabled={!isAsiAllowed}
+                      className={cn(
+                        "w-9 md:w-11 h-5 md:h-6 bg-slate-300 rounded-full appearance-none checked:bg-[#3AC4B6] transition-all relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:w-3 md:after:w-4 after:h-3 md:after:h-4 after:rounded-full after:transition-all checked:after:left-5 md:checked:after:left-6 shadow-inner",
+                        !isAsiAllowed
+                          ? "opacity-50 cursor-not-allowed"
+                          : "cursor-pointer",
+                      )}
                     />
                   </div>
+                  {!isAsiAllowed && birthDateValue && (
+                    <p className="text-[8px] md:text-[10px] text-slate-400 font-semibold mt-1">
+                      ASI eksklusif hanya sampai 6 bulan — usia anak:{" "}
+                      {ageMonths} bulan. Tidak dapat dipilih.
+                    </p>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
                     Jenis Kelamin
                   </label>
                   <select
                     {...register("gender")}
                     className={cn(
-                      "w-full h-[52px] md:h-[62px] bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-4 md:px-6 text-sm font-bold text-slate-700 outline-none cursor-pointer appearance-none transition-all",
+                      "w-full h-[48px] md:h-[62px] bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-3 md:px-6 text-xs md:text-sm font-bold text-slate-700 outline-none cursor-pointer appearance-none transition-all",
                       errors.gender
                         ? "border-rose-400 bg-rose-50/30"
                         : "border-transparent focus:border-[#3AC4B6]/20",
@@ -198,10 +220,10 @@ export default function MotherChildrenPage() {
               </div>
 
               {/* Berat & Panjang */}
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                    <Scale className="w-3 h-3" /> Berat (kg)
+              <div className="grid grid-cols-2 gap-2 md:gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                    <Scale className="w-2.5 h-2.5 md:w-3 md:h-3" /> Berat (kg)
                   </label>
                   <div className="relative">
                     <input
@@ -209,13 +231,13 @@ export default function MotherChildrenPage() {
                       type="number"
                       step="0.1"
                       className={cn(
-                        "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-5 md:px-6 py-3.5 md:py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
+                        "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 outline-none transition-all",
                         errors.birthWeight
                           ? "border-rose-400 bg-rose-50/30"
                           : "border-transparent focus:border-[#3AC4B6]/20",
                       )}
                     />
-                    <span className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px] md:text-xs">
+                    <span className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[8px] md:text-xs">
                       kg
                     </span>
                   </div>
@@ -226,9 +248,9 @@ export default function MotherChildrenPage() {
                     </p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                    <Ruler className="w-3 h-3" /> Panjang (cm)
+                <div className="space-y-1.5">
+                  <label className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                    <Ruler className="w-2.5 h-2.5 md:w-3 md:h-3" /> Panjang (cm)
                   </label>
                   <div className="relative">
                     <input
@@ -236,13 +258,13 @@ export default function MotherChildrenPage() {
                       type="number"
                       step="0.1"
                       className={cn(
-                        "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-5 md:px-6 py-3.5 md:py-4.5 text-sm font-bold text-slate-700 outline-none transition-all",
+                        "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 outline-none transition-all",
                         errors.birthLength
                           ? "border-rose-400 bg-rose-50/30"
                           : "border-transparent focus:border-[#3AC4B6]/20",
                       )}
                     />
-                    <span className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px] md:text-xs">
+                    <span className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[8px] md:text-xs">
                       cm
                     </span>
                   </div>
@@ -259,7 +281,7 @@ export default function MotherChildrenPage() {
             <button
               type="submit"
               disabled={addChildMutation.isPending}
-              className="w-full bg-[#3AC4B6] text-white py-4 md:py-5 rounded-[18px] md:rounded-[22px] font-black uppercase tracking-[0.2em] hover:bg-[#2DA89B] shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 text-xs"
+              className="w-full bg-[#3AC4B6] text-white py-3 md:py-5 rounded-[18px] md:rounded-[22px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-[#2DA89B] shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-2 md:gap-3 active:scale-[0.98] disabled:opacity-50 text-[10px] md:text-xs"
             >
               {addChildMutation.isPending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -272,22 +294,22 @@ export default function MotherChildrenPage() {
         </div>
 
         {/* BOTTOM LIST SECTION */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="bg-[#ECF7F6] p-6 md:p-8 rounded-[30px] md:rounded-[35px] border border-teal-50 flex flex-row lg:flex-col items-center justify-between lg:justify-center text-center gap-4">
-            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#3AC4B6] shadow-sm shrink-0">
-              <Baby className="w-6 h-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="bg-[#ECF7F6] p-4 md:p-8 rounded-[30px] md:rounded-[35px] border border-teal-50 flex flex-row lg:flex-col items-center justify-between lg:justify-center text-center gap-3 md:gap-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-2xl flex items-center justify-center text-[#3AC4B6] shadow-sm shrink-0">
+              <Baby className="w-5 h-5 md:w-6 md:h-6" />
             </div>
-            <p className="text-[10px] md:text-[11px] font-black text-[#3AC4B6] uppercase tracking-widest">
+            <p className="text-[9px] md:text-[11px] font-black text-[#3AC4B6] uppercase tracking-widest">
               Total Terdaftar:{" "}
-              <span className="text-xl md:text-3xl ml-2">
+              <span className="text-lg md:text-3xl ml-1 md:ml-2">
                 {childProfiles?.length || 0}
               </span>
             </p>
           </div>
 
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             {childProfiles?.length === 0 ? (
-              <div className="col-span-full bg-slate-50 rounded-[25px] flex items-center justify-center border-2 border-dashed border-slate-200 text-slate-400 font-black uppercase text-[10px] tracking-widest p-10">
+              <div className="col-span-full bg-slate-50 rounded-[25px] flex items-center justify-center border-2 border-dashed border-slate-200 text-slate-400 font-black uppercase text-[9px] md:text-[10px] tracking-widest p-8 md:p-10">
                 Belum ada data anak
               </div>
             ) : (
@@ -295,12 +317,12 @@ export default function MotherChildrenPage() {
                 <Link
                   href={`/dashboard/mother/child/${child.id}`}
                   key={child.id}
-                  className="bg-white p-5 md:p-6 rounded-[25px] md:rounded-[30px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-[#3AC4B6]/30 transition-all active:scale-[0.98]"
+                  className="bg-white p-4 md:p-6 rounded-[25px] md:rounded-[30px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-[#3AC4B6]/30 transition-all active:scale-[0.98]"
                 >
-                  <div className="flex items-center gap-4 truncate">
+                  <div className="flex items-center gap-3 md:gap-4 truncate">
                     <div
                       className={cn(
-                        "shrink-0 w-10 h-10 rounded-xl flex items-center justify-center",
+                        "shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center",
                         child.gender === "L"
                           ? "bg-blue-50 text-blue-500"
                           : "bg-pink-50 text-pink-500",

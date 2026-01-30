@@ -1,5 +1,6 @@
 # General
 .env
+.env.local
 backend/node_modules
 frontend/.next
 frontend/node_modules

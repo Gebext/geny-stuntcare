@@ -9,15 +9,12 @@ import {
   Heart,
   LineChart,
   MessageCircle,
-  Bell,
   Users,
   LogOut,
   User,
-  Menu,
-  X,
   BabyIcon,
-  CalendarArrowUp,
   Stethoscope,
+  CalendarCheck,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { useAuthStore } from "@/store/authStore";
@@ -68,7 +65,7 @@ const kaderMenuItems = [
   },
   {
     id: "agenda",
-    icon: CalendarArrowUp,
+    icon: CalendarCheck,
     label: "Agenda",
     path: "/dashboard/kader/agenda",
   },
@@ -170,7 +167,6 @@ export const Sidebar = () => {
     role: string;
   } | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -189,9 +185,7 @@ export const Sidebar = () => {
     }
   }, [token]);
 
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  // mobile drawer removed: mobile will use bottom navigation
 
   // Mencegah Hydration Error: Jangan rendet apapun sampai mounted di client
   if (!mounted) return null;
@@ -209,48 +203,34 @@ export const Sidebar = () => {
         />
       </aside>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-100 flex items-center px-4 z-40">
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-        >
-          {mobileOpen ? (
-            <X className="w-6 h-6 text-[#64748B]" />
-          ) : (
-            <Menu className="w-6 h-6 text-[#64748B]" />
-          )}
-          <span className="sr-only">Toggle menu</span>
-        </button>
-        <div className="ml-4">
-          <Logo />
-        </div>
-      </div>
-
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 md:hidden z-30"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      <aside
-        className={cn(
-          "fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-slate-100 flex flex-col md:hidden z-40 transition-transform duration-300",
-          mobileOpen ? "translate-x-0" : "-translate-x-full",
-        )}
-      >
-        <SidebarContent
-          userData={userData}
-          currentRole={currentRole}
-          pathname={pathname}
-          logout={logout}
-        />
-      </aside>
+      {/* Mobile: fixed bottom navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-100 flex items-center justify-around z-40">
+        {(currentRole === "kader"
+          ? kaderMenuItems
+          : currentRole === "admin"
+            ? adminMenuItems
+            : motherMenuItems
+        ).map((item) => (
+          <Link key={item.id} href={item.path}>
+            <div
+              className={cn(
+                "flex flex-col items-center justify-center gap-1 text-[10px] font-semibold transition-colors",
+                pathname === item.path
+                  ? "text-[#3AC4B6]"
+                  : "text-[#64748B] hover:text-slate-900",
+              )}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="truncate max-w-[64px]">{item.label}</span>
+            </div>
+          </Link>
+        ))}
+      </nav>
 
       <style jsx>{`
         @media (max-width: 767px) {
           main {
-            margin-top: 4rem; /* h-16 for mobile header */
+            margin-bottom: 4rem; /* h-16 for mobile bottom nav */
             margin-left: 0;
           }
         }

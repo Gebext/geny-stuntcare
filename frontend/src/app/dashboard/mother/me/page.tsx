@@ -106,55 +106,58 @@ export default function MotherMePage() {
 
   return (
     <RoleGuard allowedRoles={["mother"]}>
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-8 pb-10">
-        <header className="flex items-center gap-5 bg-gradient-to-br from-[#3AC4B6] to-[#2DA89B] p-8 rounded-[35px] text-white shadow-lg shadow-teal-100/50">
-          <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-[22px] flex items-center justify-center border border-white/30">
-            <Heart className="w-8 h-8 fill-white" />
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-4 md:space-y-8 pb-10 px-4 md:px-0">
+        <header className="flex items-center gap-3 md:gap-5 bg-gradient-to-br from-[#3AC4B6] to-[#2DA89B] p-4 md:p-8 rounded-[35px] text-white shadow-lg shadow-teal-100/50">
+          <div className="w-12 h-12 md:w-16 md:h-16 bg-white/20 backdrop-blur-md rounded-[22px] flex items-center justify-center border border-white/30">
+            <Heart className="w-6 h-6 md:w-8 md:h-8 fill-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-lg md:text-2xl font-bold tracking-tight">
               Kesehatan Bunda
             </h1>
-            <p className="text-teal-50/80 text-sm font-medium mt-1">
+            <p className="text-teal-50/80 text-[10px] md:text-sm font-medium mt-0.5">
               Lengkapi data antropometri untuk pemantauan gizi
             </p>
           </div>
         </header>
 
-        <div className="flex justify-start px-2">
+        <div className="flex justify-start">
           <Link
             href="/dashboard/mother/me/environment"
-            className="group flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-100 rounded-full shadow-sm hover:border-[#3AC4B6]/30 hover:bg-[#F0FDFA] transition-all"
+            className="group flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 bg-white border border-slate-100 rounded-full shadow-sm hover:border-[#3AC4B6]/30 hover:bg-[#F0FDFA] transition-all"
           >
-            <div className="w-6 h-6 bg-[#F0FDFA] group-hover:bg-[#3AC4B6] rounded-full flex items-center justify-center transition-colors">
-              <Home className="w-3 h-3 text-[#3AC4B6] group-hover:text-white" />
+            <div className="w-5 h-5 md:w-6 md:h-6 bg-[#F0FDFA] group-hover:bg-[#3AC4B6] rounded-full flex items-center justify-center transition-colors">
+              <Home className="w-2.5 h-2.5 md:w-3 md:h-3 text-[#3AC4B6] group-hover:text-white" />
             </div>
-            <span className="text-[11px] font-bold text-slate-500 group-hover:text-[#3AC4B6] uppercase tracking-widest">
+            <span className="text-[9px] md:text-[11px] font-bold text-slate-500 group-hover:text-[#3AC4B6] uppercase tracking-widest">
               Setup Lingkungan & Sanitasi
             </span>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#3AC4B6] group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5 text-slate-300 group-hover:text-[#3AC4B6] group-hover:translate-x-0.5 transition-all" />
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
-          <div className="bg-white p-8 md:p-10 rounded-[35px] border border-slate-100 shadow-sm space-y-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                  <Calendar className="w-3 h-3" /> Umur Bunda
+        <form
+          onSubmit={handleSubmit(onSubmit as any)}
+          className="space-y-4 md:space-y-8"
+        >
+          <div className="bg-white p-4 md:p-10 rounded-[35px] border border-slate-100 shadow-sm space-y-6 md:space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 md:gap-y-8">
+              <div className="space-y-1.5">
+                <label className="text-[9px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                  <Calendar className="w-2.5 h-2.5 md:w-3 md:h-3" /> Umur Bunda
                 </label>
                 <div className="relative group">
                   <input
                     {...register("age")}
                     type="number"
                     className={cn(
-                      "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 transition-all outline-none",
+                      "w-full bg-slate-50 border-2 rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.age
                         ? "border-rose-400"
                         : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                     )}
                   />
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
+                  <span className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-[8px] md:text-xs">
                     Tahun
                   </span>
                 </div>
@@ -165,9 +168,9 @@ export default function MotherMePage() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                  <Ruler className="w-3 h-3" /> Tinggi Badan
+              <div className="space-y-1.5">
+                <label className="text-[9px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                  <Ruler className="w-2.5 h-2.5 md:w-3 md:h-3" /> Tinggi Badan
                 </label>
                 <div className="relative group">
                   <input
@@ -175,21 +178,22 @@ export default function MotherMePage() {
                     type="number"
                     step="0.1"
                     className={cn(
-                      "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 transition-all outline-none",
+                      "w-full bg-slate-50 border-2 rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.heightCm
                         ? "border-rose-400"
                         : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                     )}
                   />
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
+                  <span className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-[8px] md:text-xs">
                     cm
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                  <Activity className="w-3 h-3" /> LILA (Lingkar Lengan)
+              <div className="space-y-1.5">
+                <label className="text-[9px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                  <Activity className="w-2.5 h-2.5 md:w-3 md:h-3" /> LILA
+                  (Lingkar Lengan)
                 </label>
                 <div className="relative group">
                   <input
@@ -197,21 +201,21 @@ export default function MotherMePage() {
                     type="number"
                     step="0.1"
                     className={cn(
-                      "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 transition-all outline-none",
+                      "w-full bg-slate-50 border-2 rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.lilaCm
                         ? "border-rose-400"
                         : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                     )}
                   />
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
+                  <span className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-[8px] md:text-xs">
                     cm
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                  <Scale className="w-3 h-3" /> Berat Badan
+              <div className="space-y-1.5">
+                <label className="text-[9px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                  <Scale className="w-2.5 h-2.5 md:w-3 md:h-3" /> Berat Badan
                 </label>
                 <div className="relative group">
                   <input
@@ -219,33 +223,33 @@ export default function MotherMePage() {
                     type="number"
                     step="0.1"
                     className={cn(
-                      "w-full bg-slate-50 border-2 rounded-[22px] px-6 py-4.5 text-sm font-bold text-slate-700 transition-all outline-none",
+                      "w-full bg-slate-50 border-2 rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.weightKg
                         ? "border-rose-400"
                         : "border-transparent focus:border-[#3AC4B6]/20 focus:bg-white",
                     )}
                   />
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">
+                  <span className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-[8px] md:text-xs">
                     kg
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-50">
-              <div className="p-6 bg-[#F8FAFC] rounded-[25px] flex items-center justify-between border border-slate-50">
-                <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 pt-4 md:pt-6 border-t border-slate-50">
+              <div className="p-4 md:p-6 bg-[#F8FAFC] rounded-[25px] flex items-center justify-between border border-slate-50">
+                <div className="flex items-center gap-3 md:gap-4">
                   <div
                     className={cn(
-                      "w-11 h-11 rounded-2xl flex items-center justify-center transition-colors",
+                      "w-9 h-9 md:w-11 md:h-11 rounded-2xl flex items-center justify-center transition-colors",
                       isPregnant
                         ? "bg-pink-100 text-pink-500"
                         : "bg-slate-200 text-slate-500",
                     )}
                   >
-                    <Baby className="w-5 h-5" />
+                    <Baby className="w-4 h-4 md:w-5 md:h-5" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-700">
+                  <h4 className="text-xs md:text-sm font-bold text-slate-700">
                     Status Hamil
                   </h4>
                 </div>
@@ -264,13 +268,13 @@ export default function MotherMePage() {
                     : "opacity-0 translate-y-4 pointer-events-none",
                 )}
               >
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-pink-500 uppercase tracking-widest ml-1">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] md:text-[11px] font-bold text-pink-500 uppercase tracking-widest ml-1">
                     Trimester Kehamilan
                   </label>
                   <select
                     {...register("trimester")}
-                    className="w-full bg-pink-50/50 border-2 border-transparent focus:border-pink-200 rounded-[20px] px-6 py-4 text-sm font-bold text-slate-700 outline-none"
+                    className="w-full bg-pink-50/50 border-2 border-transparent focus:border-pink-200 rounded-[20px] px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold text-slate-700 outline-none"
                   >
                     <option value={1}>Trimester 1</option>
                     <option value={2}>Trimester 2</option>
@@ -280,16 +284,16 @@ export default function MotherMePage() {
               </div>
             </div>
 
-            <div className="p-6 bg-[#F8FAFC] rounded-[25px] flex items-center justify-between border border-slate-50">
-              <div className="flex items-center gap-4">
-                <div className="w-11 h-11 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center">
-                  <Info className="w-5 h-5" />
+            <div className="p-4 md:p-6 bg-[#F8FAFC] rounded-[25px] flex items-center justify-between border border-slate-50">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="w-9 h-9 md:w-11 md:h-11 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center">
+                  <Info className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-700">
+                  <h4 className="text-xs md:text-sm font-bold text-slate-700">
                     Kepatuhan TTD
                   </h4>
-                  <p className="text-[11px] text-slate-400 font-medium ">
+                  <p className="text-[9px] md:text-[11px] text-slate-400 font-medium">
                     Rutin konsumsi Tablet Tambah Darah
                   </p>
                 </div>
