@@ -4,7 +4,7 @@ import { Footer } from "@/features/landing/Footer";
 
 export default function Home() {
   return (
-    <div className="h-screen overflow-hidden flex flex-col">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden flex flex-col">
       <Header />
       <HeroSection />
       <Footer />

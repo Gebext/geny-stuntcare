@@ -3,7 +3,7 @@ import { Heart } from "lucide-react";
 
 export const Footer = () => {
   return (
-    <footer className="bg-card border-t border-border py-8 overflow-hidden flex-shrink-0">
+    <footer className="bg-card border-t border-border py-6 sm:py-8 overflow-hidden flex-shrink-0">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div className="md:col-span-2">
