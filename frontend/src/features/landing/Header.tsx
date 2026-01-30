@@ -17,27 +17,6 @@ export const Header = () => {
         <div className="flex justify-between h-16">
           <Logo />
 
-          <nav className="hidden md:flex items-center gap-8">
-            <a
-              href="#features"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Fitur
-            </a>
-            <a
-              href="#about"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Tentang
-            </a>
-            <a
-              href="#contact"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Kontak
-            </a>
-          </nav>
-
           <div className="flex items-center gap-4">
             <Link href="/login">
               <Button variant="ghost">Masuk</Button>

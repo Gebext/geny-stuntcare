@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Shield, Heart, Sparkles } from "lucide-react"
-import Image from "next/image"
-import HeroImage from "../../../public/assets/hero-illustration.png"
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Shield, Heart, Sparkles } from "lucide-react";
+import Image from "next/image";
+import HeroImage from "../../../public/assets/hero-illustration.png";
 
 export const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
+    <section className="relative flex-1 flex items-center overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 bg-gradient-soft" />
       <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
@@ -25,16 +25,20 @@ export const HeroSection = () => {
           >
             <div className="inline-flex items-center gap-2 bg-secondary rounded-full px-4 py-2">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-secondary-foreground">AI-Powered Child Health Monitoring</span>
+              <span className="text-sm font-medium text-secondary-foreground">
+                AI-Powered Child Health Monitoring
+              </span>
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground">
-              Cegah Stunting, <span className="text-gradient">Wujudkan Generasi Sehat</span>
+              Cegah Stunting,{" "}
+              <span className="text-gradient">Wujudkan Generasi Sehat</span>
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-lg">
-              Sistem digital berbasis AI untuk deteksi dini, pencegahan, dan penanganan risiko stunting dengan
-              rekomendasi personal yang kontekstual untuk setiap ibu dan anak.
+              Sistem digital berbasis AI untuk deteksi dini, pencegahan, dan
+              penanganan risiko stunting dengan rekomendasi personal yang
+              kontekstual untuk setiap ibu dan anak.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -45,25 +49,6 @@ export const HeroSection = () => {
               <Button variant="outline" size="xl">
                 Pelajari Lebih Lanjut
               </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-border">
-              {[
-                { value: "100K+", label: "Ibu & Anak" },
-                { value: "95%", label: "Akurasi AI" },
-                { value: "500+", label: "Posyandu" },
-              ].map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-                >
-                  <div className="text-2xl font-bold text-primary">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </motion.div>
-              ))}
             </div>
           </motion.div>
 
@@ -77,7 +62,11 @@ export const HeroSection = () => {
             <div className="relative">
               <motion.div
                 animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                transition={{
+                  duration: 4,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                }}
               >
                 <Image
                   src={HeroImage}
@@ -100,8 +89,12 @@ export const HeroSection = () => {
                     <Shield className="w-5 h-5 text-success" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-foreground">Risiko Rendah</div>
-                    <div className="text-xs text-muted-foreground">Status Anak Anda</div>
+                    <div className="text-sm font-semibold text-foreground">
+                      Risiko Rendah
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Status Anak Anda
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -117,8 +110,12 @@ export const HeroSection = () => {
                     <Heart className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-foreground">AI Rekomendasi</div>
-                    <div className="text-xs text-muted-foreground">Personal untuk Anda</div>
+                    <div className="text-sm font-semibold text-foreground">
+                      AI Rekomendasi
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Personal untuk Anda
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -127,5 +124,5 @@ export const HeroSection = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
