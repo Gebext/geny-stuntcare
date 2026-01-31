@@ -225,6 +225,13 @@ export const Sidebar = () => {
             </div>
           </Link>
         ))}
+        <button
+          onClick={logout}
+          className="flex flex-col items-center justify-center gap-1 text-[10px] font-semibold text-[#F43F5E] hover:bg-rose-50 transition-colors h-full px-2"
+        >
+          <LogOut className="w-5 h-5 rotate-180" />
+          <span className="truncate max-w-[64px]">Keluar</span>
+        </button>
       </nav>
 
       <style jsx>{`
