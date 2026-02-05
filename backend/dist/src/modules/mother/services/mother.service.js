@@ -8,15 +8,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var MotherService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MotherService = void 0;
 const common_1 = require("@nestjs/common");
 const prismaservice_1 = require("../../../prisma/prismaservice");
-let MotherService = class MotherService {
+let MotherService = MotherService_1 = class MotherService {
     constructor(prisma) {
         this.prisma = prisma;
+        this.logger = new common_1.Logger(MotherService_1.name);
     }
     async upsertProfile(userId, dto) {
+        this.logger.log(`[UPSERT PROFILE] Memproses profil untuk User ID: ${userId}`);
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
             include: { roles: { include: { role: true } } },
@@ -24,13 +27,17 @@ let MotherService = class MotherService {
         if (!user)
             throw new common_1.NotFoundException('User tidak ditemukan');
         const isMother = user.roles.some((ur) => ur.role.name === 'MOTHER');
-        if (!isMother)
+        if (!isMother) {
+            this.logger.warn(`[FORBIDDEN] User ${userId} bukan MOTHER tapi mencoba akses profil Ibu`);
             throw new common_1.ForbiddenException('Hanya akun Ibu yang dapat memiliki profil');
-        return this.prisma.motherProfile.upsert({
+        }
+        const result = await this.prisma.motherProfile.upsert({
             where: { userId },
             update: { ...dto },
             create: { userId, ...dto },
         });
+        this.logger.log(`[SUCCESS] Profil Ibu ID ${result.id} berhasil diperbarui`);
+        return result;
     }
     async getProfile(userId) {
         const profile = await this.prisma.motherProfile.findUnique({
@@ -42,6 +49,7 @@ let MotherService = class MotherService {
         return profile;
     }
     async getAssignedMothers(kaderId) {
+        this.logger.log(`[DASHBOARD KADER] Fetching hirarki data untuk Kader: ${kaderId}`);
         const assignments = await this.prisma.kaderAssignment.findMany({
             where: { kaderId },
             include: {
@@ -88,6 +96,7 @@ let MotherService = class MotherService {
     async getAssignedChildren(kaderId, query) {
         const { name, gender, stuntingRisk, page = 1, limit = 10 } = query;
         const skip = (page - 1) * limit;
+        this.logger.log(`[KADER LIST] Fetching flat children list untuk Kader: ${kaderId}`);
         const where = {
             mother: {
                 kaderAssignments: { some: { kaderId } },
@@ -119,7 +128,8 @@ let MotherService = class MotherService {
                 gender: child.gender,
                 stuntingRisk: child.stuntingRisk,
                 motherName: child.mother.user.name,
-                isVerified: true,
+                isVerified: child.isVerified,
+                lastMeasured: child.anthropometries?.[0]?.measurementDate || null,
             })),
             meta: {
                 total,
@@ -129,17 +139,19 @@ let MotherService = class MotherService {
         };
     }
     async assignMotherToKader(kaderId, motherId) {
+        this.logger.log(`[ADMIN] Assigning Mother ${motherId} to Kader ${kaderId}`);
         const kader = await this.prisma.user.findUnique({
             where: { id: kaderId },
             include: { roles: { include: { role: true } } },
         });
         if (!kader || !kader.roles.some((r) => r.role.name === 'KADER')) {
-            throw new common_1.ForbiddenException('User bukan Kader');
+            throw new common_1.ForbiddenException('User yang dipilih bukan Kader atau tidak ditemukan');
         }
         const existing = await this.prisma.kaderAssignment.findFirst({
             where: { motherId },
         });
         if (existing) {
+            this.logger.log(`[ADMIN] Updating existing assignment for Mother ${motherId}`);
             return this.prisma.kaderAssignment.update({
                 where: { id: existing.id },
                 data: { kaderId },
@@ -153,6 +165,7 @@ let MotherService = class MotherService {
         const { page, limit, search, status } = query;
         const skip = (page - 1) * limit;
         const where = {};
+        this.logger.log(`[ADMIN] Fetching all mothers search: ${search || 'none'}`);
         if (search) {
             where.user = { name: { contains: search, mode: 'insensitive' } };
         }
@@ -180,18 +193,19 @@ let MotherService = class MotherService {
         };
     }
     async unassignMotherFromKader(motherId) {
+        this.logger.warn(`[ADMIN] Unassigning Kader from Mother ID: ${motherId}`);
         const assignment = await this.prisma.kaderAssignment.findFirst({
             where: { motherId },
         });
         if (!assignment)
-            throw new common_1.NotFoundException('Penugasan tidak ditemukan');
+            throw new common_1.NotFoundException('Data penugasan tidak ditemukan');
         return this.prisma.kaderAssignment.delete({
             where: { id: assignment.id },
         });
     }
 };
 exports.MotherService = MotherService;
-exports.MotherService = MotherService = __decorate([
+exports.MotherService = MotherService = MotherService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prismaservice_1.PrismaService])
 ], MotherService);

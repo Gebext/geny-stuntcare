@@ -2,6 +2,7 @@ import { ChildFilterDto, CreateChildDto } from '../dtos/create-child.dto';
 import { PrismaService } from 'src/prisma/prismaservice';
 export declare class ChildService {
     private prisma;
+    private readonly logger;
     constructor(prisma: PrismaService);
     findOne(id: string): Promise<{
         motherName: string;

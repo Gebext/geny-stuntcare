@@ -2,6 +2,7 @@ import { CreateNutritionDto } from '../dtos/create-nutrition.dto';
 import { PrismaService } from 'src/prisma/prismaservice';
 export declare class NutritionService {
     private prisma;
+    private readonly logger;
     constructor(prisma: PrismaService);
     addRecord(userId: string, dto: CreateNutritionDto): Promise<{
         id: string;

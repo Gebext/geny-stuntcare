@@ -8,38 +8,31 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var ChildService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChildService = void 0;
 const common_1 = require("@nestjs/common");
 const prismaservice_1 = require("../../../prisma/prismaservice");
-let ChildService = class ChildService {
+let ChildService = ChildService_1 = class ChildService {
     constructor(prisma) {
         this.prisma = prisma;
+        this.logger = new common_1.Logger(ChildService_1.name);
     }
     async findOne(id) {
+        this.logger.log(`[FETCH] Mengambil detail lengkap profil anak ID: ${id}`);
         const child = await this.prisma.childProfile.findUnique({
             where: { id },
             include: {
                 mother: {
                     include: {
-                        user: {
-                            select: { name: true, phone: true },
-                        },
+                        user: { select: { name: true, phone: true } },
                         environment: true,
                     },
                 },
-                anthropometries: {
-                    orderBy: { measurementDate: 'desc' },
-                },
-                immunizations: {
-                    orderBy: { dateGiven: 'desc' },
-                },
-                nutritionHistories: {
-                    orderBy: { recordedAt: 'desc' },
-                },
-                healthHistories: {
-                    orderBy: { diagnosisDate: 'desc' },
-                },
+                anthropometries: { orderBy: { measurementDate: 'desc' } },
+                immunizations: { orderBy: { dateGiven: 'desc' } },
+                nutritionHistories: { orderBy: { recordedAt: 'desc' } },
+                healthHistories: { orderBy: { diagnosisDate: 'desc' } },
                 aiResults: {
                     orderBy: { generatedAt: 'desc' },
                     take: 1,
@@ -48,6 +41,7 @@ let ChildService = class ChildService {
             },
         });
         if (!child) {
+            this.logger.warn(`[NOT FOUND] Child ID ${id} tidak ada di database`);
             throw new common_1.NotFoundException(`Data anak dengan ID ${id} tidak ditemukan`);
         }
         return {
@@ -63,18 +57,16 @@ let ChildService = class ChildService {
         };
     }
     async findAll(query) {
+        this.logger.log(`[QUERY] Pencarian anak - Name: ${query.name || 'ALL'}, Risk: ${query.stuntingRisk || 'ALL'}`);
         const { name, gender, stuntingRisk, page, limit } = query;
         const skip = (page - 1) * limit;
         const where = {};
-        if (name) {
+        if (name)
             where.name = { contains: name, mode: 'insensitive' };
-        }
-        if (gender) {
+        if (gender)
             where.gender = gender;
-        }
-        if (stuntingRisk) {
+        if (stuntingRisk)
             where.stuntingRisk = stuntingRisk;
-        }
         const [data, total] = await Promise.all([
             this.prisma.childProfile.findMany({
                 where,
@@ -82,12 +74,7 @@ let ChildService = class ChildService {
                 take: limit,
                 include: {
                     mother: {
-                        include: {
-                            user: {
-                                select: { name: true },
-                            },
-                            environment: true,
-                        },
+                        include: { user: { select: { name: true } }, environment: true },
                     },
                     anthropometries: { orderBy: { measurementDate: 'desc' }, take: 1 },
                 },
@@ -95,24 +82,21 @@ let ChildService = class ChildService {
             }),
             this.prisma.childProfile.count({ where }),
         ]);
-        const formattedData = data.map((item) => ({
-            ...item,
-            motherName: item.mother?.user?.name || 'Tidak diketahui',
-        }));
         return {
-            data: formattedData,
-            meta: {
-                total,
-                page,
-                lastPage: Math.ceil(total / limit),
-            },
+            data: data.map((item) => ({
+                ...item,
+                motherName: item.mother?.user?.name || 'Tidak diketahui',
+            })),
+            meta: { total, page, lastPage: Math.ceil(total / limit) },
         };
     }
     async createChild(userId, dto) {
+        this.logger.log(`[CREATE] User ${userId} mencoba mendaftarkan anak: ${dto.name}`);
         const motherProfile = await this.prisma.motherProfile.findUnique({
             where: { userId },
         });
         if (!motherProfile) {
+            this.logger.warn(`[FAILED] User ${userId} belum melengkapi profil Ibu`);
             throw new common_1.NotFoundException('Lengkapi profil Ibu terlebih dahulu.');
         }
         const existing = await this.prisma.childProfile.findFirst({
@@ -122,55 +106,57 @@ let ChildService = class ChildService {
             },
         });
         if (existing) {
+            this.logger.error(`[CONFLICT] Nama anak ${dto.name} sudah ada untuk Ibu ID ${motherProfile.id}`);
             throw new common_1.ConflictException(`Anak dengan nama ${dto.name} sudah terdaftar.`);
         }
-        return this.prisma.childProfile.create({
+        const newChild = await this.prisma.childProfile.create({
             data: {
-                name: dto.name,
-                gender: dto.gender,
+                ...dto,
                 birthDate: new Date(dto.birthDate),
-                birthWeight: dto.birthWeight,
-                birthLength: dto.birthLength,
-                asiExclusive: dto.asiExclusive,
                 motherId: motherProfile.id,
             },
         });
+        this.logger.log(`[SUCCESS] Anak berhasil dibuat ID: ${newChild.id}`);
+        return newChild;
     }
     async updateChild(userId, childId, dto) {
+        this.logger.log(`[UPDATE] Request update Child ID ${childId} oleh User ${userId}`);
         const child = await this.prisma.childProfile.findUnique({
             where: { id: childId },
             include: { mother: true },
         });
         if (!child || child.mother.userId !== userId) {
+            this.logger.error(`[UNAUTHORIZED] User ${userId} mencoba update data yang bukan miliknya!`);
             throw new common_1.NotFoundException('Data anak tidak ditemukan.');
         }
-        const { id, motherId, ...updateData } = dto;
         if (child.isVerified) {
+            this.logger.warn(`[FORBIDDEN] Mencoba update data yang sudah terverifikasi Kader (Child ID: ${childId})`);
             throw new common_1.ForbiddenException('Data sudah diverifikasi Kader dan tidak dapat diubah.');
         }
         return this.prisma.childProfile.update({
             where: { id: childId },
             data: {
-                ...updateData,
+                ...dto,
                 birthDate: dto.birthDate ? new Date(dto.birthDate) : child.birthDate,
             },
         });
     }
     async verifyByKader(childId, risk) {
+        this.logger.log(`[VERIFICATION] Kader memverifikasi Child ID: ${childId} dengan risiko: ${risk}`);
         const check = await this.prisma.childProfile.findUnique({
             where: { id: childId },
         });
         if (!check)
             throw new common_1.NotFoundException('Anak tidak ditemukan');
-        return this.prisma.childProfile.update({
+        const updated = await this.prisma.childProfile.update({
             where: { id: childId },
-            data: {
-                isVerified: true,
-                stuntingRisk: risk,
-            },
+            data: { isVerified: true, stuntingRisk: risk },
         });
+        this.logger.log(`[SUCCESS] Child ID ${childId} resmi diverifikasi Kader.`);
+        return updated;
     }
     async getMyChildren(userId) {
+        this.logger.log(`[FETCH] Mengambil daftar anak milik Ibu (User ID: ${userId})`);
         return this.prisma.childProfile.findMany({
             where: { mother: { userId } },
             orderBy: { createdAt: 'desc' },
@@ -178,7 +164,7 @@ let ChildService = class ChildService {
     }
 };
 exports.ChildService = ChildService;
-exports.ChildService = ChildService = __decorate([
+exports.ChildService = ChildService = ChildService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prismaservice_1.PrismaService])
 ], ChildService);

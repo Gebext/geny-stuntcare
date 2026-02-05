@@ -2,6 +2,7 @@ import { PrismaService } from 'src/prisma/prismaservice';
 import { CreateMotherProfileDto } from '../dtos/create-mother-profile.dto';
 export declare class MotherService {
     private prisma;
+    private readonly logger;
     constructor(prisma: PrismaService);
     upsertProfile(userId: string, dto: CreateMotherProfileDto): Promise<{
         id: string;

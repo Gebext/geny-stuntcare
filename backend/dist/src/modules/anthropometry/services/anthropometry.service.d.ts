@@ -2,6 +2,7 @@ import { CreateAnthropometryDto } from '../dtos/create-anthropometry.dto';
 import { PrismaService } from 'src/prisma/prismaservice';
 export declare class AnthropometryService {
     private prisma;
+    private readonly logger;
     constructor(prisma: PrismaService);
     recordMeasurement(userId: string, userName: string, roles: number[], dto: CreateAnthropometryDto): Promise<{
         id: string;
