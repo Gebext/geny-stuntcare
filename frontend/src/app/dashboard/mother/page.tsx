@@ -2,8 +2,16 @@
 
 import { useMotherStore } from "@/store/useMotherStore";
 import { RoleGuard } from "@/components/auth/RoleGuard";
-import { Baby, TrendingUp, Calendar, Heart, CheckCircle2 } from "lucide-react";
+import {
+  Baby,
+  TrendingUp,
+  Calendar,
+  Heart,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function MotherDashboardPage() {
   const { profile, childProfiles } = useMotherStore();
@@ -68,14 +76,36 @@ export default function MotherDashboardPage() {
           </div>
 
           {/* AI Card */}
-          <div className="bg-[#3AC4B6] p-8 rounded-[40px] text-white shadow-lg shadow-teal-100/50">
+          <div className="bg-[#3AC4B6] p-8 rounded-[40px] text-white shadow-lg shadow-teal-100/50 flex flex-col h-full">
             <TrendingUp className="mb-6 opacity-50" />
             <h3 className="font-black uppercase mb-3">Rekomendasi AI</h3>
-            <p className="text-xs font-medium opacity-90 leading-relaxed">
+            <p className="text-xs font-medium opacity-90 leading-relaxed mb-6 flex-grow">
               {isPregnant
                 ? `Bunda sedang di Trimester ${trimester}. Pastikan nutrisi cukup.`
                 : "Lengkapi profil Bunda untuk mendapatkan saran kesehatan harian."}
             </p>
+
+            {/* Logic Button Analysis */}
+            {!profile || !mainChild ? (
+              <div className="space-y-2">
+                <button
+                  disabled
+                  className="w-full bg-black/20 text-white/50 py-4 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <AlertCircle size={14} />
+                  Analisis Terkunci
+                </button>
+                <p className="text-[8px] text-teal-100 font-bold uppercase text-center italic leading-tight">
+                  Lengkapi profil ibu & anak <br /> untuk membuka fitur ini
+                </p>
+              </div>
+            ) : (
+              <Link href="/dashboard/mother/analysis" className="block">
+                <button className="w-full bg-white text-[#3AC4B6] hover:bg-teal-50 py-4 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-md">
+                  Lihat Analisis Detail
+                </button>
+              </Link>
+            )}
           </div>
         </div>
 

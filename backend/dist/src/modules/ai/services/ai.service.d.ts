@@ -1,0 +1,44 @@
+import { OnModuleInit } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prismaservice';
+export declare class AiService implements OnModuleInit {
+    private prisma;
+    private readonly logger;
+    private groq;
+    constructor(prisma: PrismaService);
+    onModuleInit(): void;
+    getStoredAnalysis(childId: string): Promise<{
+        id: string;
+        childId: string;
+        score: number;
+        zScore: number;
+        status: string;
+        summary: string;
+        weightScore: number;
+        heightScore: number;
+        nutritionScore: number;
+        sanitationScore: number;
+        immunizationScore: number;
+        recommendations: import(".prisma/client").Prisma.JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    runCalculationAndAi(childId: string): Promise<{
+        id: string;
+        childId: string;
+        score: number;
+        zScore: number;
+        status: string;
+        summary: string;
+        weightScore: number;
+        heightScore: number;
+        nutritionScore: number;
+        sanitationScore: number;
+        immunizationScore: number;
+        recommendations: import(".prisma/client").Prisma.JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    private getAiMedicalAdvice;
+    private calculateZScore;
+    private calculateAge;
+}

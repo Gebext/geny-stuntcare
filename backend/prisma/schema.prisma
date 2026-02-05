@@ -234,6 +234,7 @@ model AiAnalysis {
   id                String   @id @default(uuid())
   childId           String   @unique
   score             Int      // Skor total 0-100
+  zScore            Float?   // <--- TAMBAHKAN INI (Opsional/Nullable dulu aman)
   status            String   // e.g., "Risiko Rendah"
   summary           String   @db.Text
   
@@ -244,7 +245,6 @@ model AiAnalysis {
   sanitationScore   Int
   immunizationScore Int
   
-  // Disimpan sebagai JSON agar fleksibel (array 3 object)
   recommendations   Json     
   
   createdAt         DateTime @default(now())

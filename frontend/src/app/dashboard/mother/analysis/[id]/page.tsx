@@ -19,6 +19,7 @@ import {
   Zap,
   Loader2,
   AlertTriangle,
+  Activity, // Icon tambahan untuk Z-Score
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConfirmModal } from "@/hooks/useConfirmModal";
@@ -33,17 +34,16 @@ export default function MotherAnalysisDetailPage() {
   const { analysis, isLoading, isTriggering, triggerAnalysis } =
     useMotherAiAnalysis(childId);
 
-  // Hook untuk Modal Konfirmasi
   const { isOpen, openModal, closeModal } = useConfirmModal();
 
-  // Handler untuk menjalankan AI
   const handleExecuteAi = () => {
     triggerAnalysis(undefined, {
       onSuccess: () => {
         closeModal();
         toast({
-          title: "Analisis Selesai",
-          description: "Data kesehatan terbaru berhasil diproses oleh AI.",
+          title: "Analisis Berhasil",
+          description:
+            "Diagnosa medis terbaru telah diperbarui oleh Llama-3 AI.",
         });
       },
       onError: (err: any) => {
@@ -52,7 +52,7 @@ export default function MotherAnalysisDetailPage() {
           variant: "destructive",
           title: "Gagal Menganalisis",
           description:
-            err.response?.data?.message || "Terjadi gangguan koneksi.",
+            err.response?.data?.message || "Terjadi gangguan pada otak AI.",
         });
       },
     });
@@ -63,11 +63,15 @@ export default function MotherAnalysisDetailPage() {
       <div className="h-[80vh] w-full flex flex-col items-center justify-center space-y-4">
         <Loader2 className="w-12 h-12 text-[#3AC4B6] animate-spin" />
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-          Sinkronisasi AI...
+          Sinkronisasi Diagnosa AI...
         </p>
       </div>
     );
   }
+
+  const recommendations = Array.isArray(analysis?.recommendations)
+    ? (analysis.recommendations as any[])
+    : [];
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-20">
@@ -84,11 +88,10 @@ export default function MotherAnalysisDetailPage() {
             </span>
           </button>
           <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tight">
-            Analisis <span className="text-[#3AC4B6]">AI</span>
+            Analisis <span className="text-[#3AC4B6]">Medis Llama-3</span>
           </h1>
         </div>
 
-        {/* Update Button (Only visible if analysis data exists) */}
         {analysis && (
           <button
             onClick={() => openModal(null)}
@@ -98,13 +101,12 @@ export default function MotherAnalysisDetailPage() {
             <RefreshCw
               className={cn("w-4 h-4", isTriggering && "animate-spin")}
             />
-            {isTriggering ? "Memproses..." : "Perbarui Analisis"}
+            {isTriggering ? "Menganalisis..." : "Perbarui Diagnosa"}
           </button>
         )}
       </div>
 
       {!analysis ? (
-        /* --- STATE 1: EMPTY / NOT TRIGGERED YET --- */
         <div className="bg-white rounded-[40px] border-2 border-dashed border-slate-100 p-12 md:p-24 flex flex-col items-center text-center shadow-sm">
           <div className="w-24 h-24 bg-[#F0FDFB] rounded-[35px] flex items-center justify-center text-[#3AC4B6] mb-8 shadow-inner">
             <Brain className="w-12 h-12" />
@@ -112,25 +114,24 @@ export default function MotherAnalysisDetailPage() {
           <h2 className="text-2xl font-black text-slate-800 mb-3 uppercase tracking-tight">
             Mulai Deteksi Dini
           </h2>
-          <p className="text-slate-400 text-sm max-w-md mb-10 font-medium leading-relaxed uppercase tracking-wide text-[11px]">
-            Sistem belum memiliki riwayat analisis. Klik tombol di bawah untuk
-            meminta AI menghitung risiko stunting anak Anda.
+          <p className="text-slate-400 text-sm max-w-md mb-10 font-medium uppercase tracking-wide text-[11px]">
+            AI akan menghitung Z-Score secara akurat dan memberikan peringatan
+            dini terhadap risiko stunting atau gizi buruk.
           </p>
           <button
             onClick={() => openModal(null)}
-            className="bg-[#3AC4B6] text-white px-10 py-5 rounded-[26px] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-100 flex items-center gap-4 hover:scale-105 active:scale-95 transition-all"
+            className="bg-[#3AC4B6] text-white px-10 py-5 rounded-[26px] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-100 flex items-center gap-4 hover:scale-105 transition-all"
           >
             <Zap className="w-5 h-5 fill-current" />
-            Jalankan Analisis Sekarang
+            Jalankan Diagnosa Sekarang
           </button>
         </div>
       ) : (
-        /* --- STATE 2: ANALYSIS RESULT DASHBOARD --- */
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
-          {/* Main Score Card */}
+          {/* Main Score & Z-Score Status */}
           <div className="bg-white rounded-[45px] border border-slate-100 shadow-sm p-8 md:p-14 relative overflow-hidden">
             <div className="flex flex-col md:flex-row items-center gap-12 relative z-10">
-              {/* Circular Progress SVG */}
+              {/* Circular Score */}
               <div className="relative flex items-center justify-center scale-110">
                 <svg className="w-52 h-52 transform -rotate-90">
                   <circle
@@ -153,7 +154,10 @@ export default function MotherAnalysisDetailPage() {
                     strokeDashoffset={
                       590.6 - (590.6 * (analysis?.score || 0)) / 100
                     }
-                    className="text-[#3AC4B6] transition-all duration-1000 ease-in-out"
+                    className={cn(
+                      "transition-all duration-1000 ease-in-out",
+                      analysis.score < 50 ? "text-red-500" : "text-[#3AC4B6]",
+                    )}
                     strokeLinecap="round"
                   />
                 </svg>
@@ -162,33 +166,52 @@ export default function MotherAnalysisDetailPage() {
                     {analysis?.score}
                   </span>
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
-                    Health Score
+                    Health Index
                   </span>
                 </div>
               </div>
 
+              {/* Diagnosis Text */}
               <div className="flex-1 text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-50 text-[#3AC4B6] rounded-full mb-6 border border-emerald-100">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">
-                    {analysis?.status}
-                  </span>
+                <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-6">
+                  <div
+                    className={cn(
+                      "inline-flex items-center gap-2 px-5 py-2 rounded-full border",
+                      analysis.score < 50
+                        ? "bg-red-50 text-red-600 border-red-100"
+                        : "bg-emerald-50 text-[#3AC4B6] border-emerald-100",
+                    )}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      {analysis?.status}
+                    </span>
+                  </div>
+
+                  {/* Z-SCORE BADGE */}
+                  <div className="inline-flex items-center gap-2 px-5 py-2 bg-slate-900 text-white rounded-full border border-slate-800">
+                    <Activity className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      Z-Score: {analysis?.zScore?.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-                <h2 className="text-3xl font-black text-slate-800 mb-4 tracking-tight uppercase ">
-                  Laporan Gizi Pintar
+
+                <h2 className="text-3xl font-black text-slate-800 mb-4 tracking-tight uppercase">
+                  Diagnosa Ahli
                 </h2>
-                <p className="text-slate-500 text-lg leading-relaxed font-medium ">
+                <p className="text-slate-500 text-lg leading-relaxed font-medium italic italic-quote">
                   &quot;{analysis?.summary}&quot;
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Detailed Stats Grid */}
+          {/* Breakdown Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
               icon={<Scale />}
-              label="Berat Badan"
+              label="Skor Berat"
               value={analysis?.weightScore}
               color="text-blue-500"
               bgColor="bg-blue-50"
@@ -196,7 +219,7 @@ export default function MotherAnalysisDetailPage() {
             />
             <StatCard
               icon={<Ruler />}
-              label="Tinggi Badan"
+              label="Skor Tinggi"
               value={analysis?.heightScore}
               color="text-purple-500"
               bgColor="bg-purple-50"
@@ -204,7 +227,7 @@ export default function MotherAnalysisDetailPage() {
             />
             <StatCard
               icon={<Utensils />}
-              label="Asupan Gizi"
+              label="Pola Makan"
               value={analysis?.nutritionScore}
               color="text-orange-500"
               bgColor="bg-orange-50"
@@ -220,13 +243,13 @@ export default function MotherAnalysisDetailPage() {
             />
           </div>
 
-          {/* Recommendation List */}
+          {/* Recommendations List */}
           <div className="bg-white rounded-[45px] border border-slate-100 shadow-sm p-8 md:p-12">
             <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em] mb-10 ml-2">
-              Rekomendasi Ahli AI
+              Rekomendasi Tindakan Medis
             </h3>
             <div className="grid gap-5">
-              {analysis?.recommendations?.map((rec: any, idx: number) => (
+              {recommendations.map((rec: any, idx: number) => (
                 <div
                   key={idx}
                   className={cn(
@@ -249,18 +272,18 @@ export default function MotherAnalysisDetailPage() {
                     )}
                   >
                     {rec.type === "WARNING" ? (
-                      <AlertCircle />
+                      <AlertTriangle className="w-6 h-6" />
                     ) : rec.type === "SUCCESS" ? (
-                      <CheckCircle2 />
+                      <CheckCircle2 className="w-6 h-6" />
                     ) : (
-                      <Info />
+                      <Info className="w-6 h-6" />
                     )}
                   </div>
                   <div>
                     <h4 className="font-black text-slate-800 text-base mb-1 uppercase tracking-tight">
                       {rec.title}
                     </h4>
-                    <p className="text-slate-500 text-[13px] font-medium leading-relaxed uppercase tracking-tight">
+                    <p className="text-slate-500 text-[13px] font-medium leading-relaxed">
                       {rec.desc}
                     </p>
                   </div>
@@ -271,7 +294,6 @@ export default function MotherAnalysisDetailPage() {
         </div>
       )}
 
-      {/* CONFIRMATION MODAL - Using the Component we discussed */}
       <ConfirmModal
         isOpen={isOpen}
         onClose={closeModal}
@@ -279,21 +301,20 @@ export default function MotherAnalysisDetailPage() {
         isLoading={isTriggering}
         icon={Brain}
         variant="teal"
-        title="AI Health Analysis"
+        title="AI Medical Analysis"
         description={
           <span>
-            Apakah Anda ingin menjalankan analisis kesehatan menggunakan{" "}
-            <span className="text-[#3AC4B6]">AI Gemini</span> untuk data anak
-            ini?
+            Jalankan diagnosa cerdas{" "}
+            <span className="text-[#3AC4B6] font-bold">Llama-3.3</span> untuk
+            mendeteksi risiko stunting dan status gizi anak secara akurat?
           </span>
         }
-        confirmText="Ya, Jalankan"
+        confirmText="Ya, Jalankan Diagnosa"
       />
     </div>
   );
 }
 
-/* HELPER COMPONENT: STAT CARD */
 function StatCard({ icon, label, value, color, bgColor, barColor }: any) {
   return (
     <div className="bg-white p-7 rounded-[40px] border border-slate-50 shadow-sm hover:shadow-md transition-all group">
@@ -318,11 +339,11 @@ function StatCard({ icon, label, value, color, bgColor, barColor }: any) {
               "h-full rounded-full transition-all duration-1000",
               barColor,
             )}
-            style={{ width: `${value}%` }}
+            style={{ width: `${value || 0}%` }}
           />
         </div>
         <span className="text-xs font-black text-slate-700 tracking-tighter">
-          {value}%
+          {value || 0}%
         </span>
       </div>
     </div>

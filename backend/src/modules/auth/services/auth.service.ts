@@ -1,51 +1,83 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prismaservice';
 
 @Injectable()
 export class AuthService {
+  // Inisialisasi logger untuk AuthService
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
 
   async login(email: string, pass: string) {
-    // 1. Validasi awal: Jika password tidak dikirim sama sekali oleh FE
+    this.logger.log(`Menerima percobaan login untuk email: ${email}`);
+
+    // 1. Validasi awal password dari FE
     if (!pass) {
+      this.logger.warn(
+        `Login gagal: Password tidak disertakan untuk email ${email}`,
+      );
       throw new UnauthorizedException('Email atau password salah');
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-      include: { 
-        roles: { 
-          include: { role: true } 
-        } 
-      },
-    });
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+        include: {
+          roles: {
+            include: { role: true },
+          },
+        },
+      });
 
-    // 2. Cek apakah user ada DAN punya passwordHash
-    // (Jika user.passwordHash null, berarti dia user social login)
-    if (!user || !user.passwordHash) {
-      throw new UnauthorizedException('Email atau password salah');
+      // 2. Cek apakah user ada DAN punya passwordHash
+      if (!user) {
+        this.logger.warn(
+          `Login gagal: User dengan email ${email} tidak ditemukan`,
+        );
+        throw new UnauthorizedException('Email atau password salah');
+      }
+
+      if (!user.passwordHash) {
+        this.logger.warn(
+          `Login gagal: User ${email} mencoba login via password tapi akun menggunakan Social Login`,
+        );
+        throw new UnauthorizedException('Metode login tidak sesuai');
+      }
+
+      // 3. Verifikasi Password dengan bcrypt
+      const isMatch = await bcrypt.compare(pass, user.passwordHash);
+
+      if (!isMatch) {
+        this.logger.warn(`Login gagal: Password salah untuk email ${email}`);
+        throw new UnauthorizedException('Email atau password salah');
+      }
+
+      // 4. Generate Token
+      const payload = {
+        sub: user.id,
+        email: user.email,
+        roles: user.roles.map((ur) => ur.role.name),
+      };
+
+      this.logger.log(
+        `Login berhasil: User ID ${user.id} (${user.email}) telah diautentikasi`,
+      );
+
+      return {
+        access_token: this.jwtService.sign(payload),
+      };
+    } catch (error) {
+      // Mencatat error sistem (misal: database down)
+      this.logger.error(
+        `Error pada proses login untuk ${email}: ${error.message}`,
+        error.stack,
+      );
+      throw error;
     }
-
-    // 3. Sekarang aman untuk memanggil bcrypt karena pass dan hash pasti string
-    const isMatch = await bcrypt.compare(pass, user.passwordHash);
-
-    if (!isMatch) {
-      throw new UnauthorizedException('Email atau password salah');
-    }
-
-    const payload = { 
-      sub: user.id, 
-      email: user.email,
-      roles: user.roles.map(ur => ur.role.name) 
-    };
-
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
   }
 }

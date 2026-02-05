@@ -1,16 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
-import { useToast } from "@/hooks/use-toast";
 
 export const useMotherAiAnalysis = (childId: string) => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const query = useQuery({
     queryKey: ["mother-ai-analysis", childId],
     queryFn: async () => {
       const res = await api.get(`/ai-analysis/${childId}`);
-      return res.data?.data || null;
+      /**
+       * MENGATASI DOUBLE WRAPPING:
+       * res.data = Response dari Axios
+       * res.data.data = Response dari Global Interceptor NestJS
+       * res.data.data.data = Isi objek jika Controller juga membungkus (Double)
+       */
+      const result = res.data?.data?.data || res.data?.data || res.data;
+      return result;
     },
     enabled: !!childId,
   });
@@ -18,16 +23,21 @@ export const useMotherAiAnalysis = (childId: string) => {
   const mutation = useMutation({
     mutationFn: async () => {
       const res = await api.post(`/ai-analysis/trigger/${childId}`);
-      return res.data?.data;
+      // Bongkar bungkusannya di sini juga
+      const result = res.data?.data?.data || res.data?.data || res.data;
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (newData) => {
+      // Update cache agar UI langsung sinkron tanpa loading ulang
+      queryClient.setQueryData(["mother-ai-analysis", childId], newData);
+
+      // Pastikan cache benar-benar fresh
       queryClient.invalidateQueries({
         queryKey: ["mother-ai-analysis", childId],
       });
-      toast({
-        title: "Analisis Berhasil",
-        description: "Data kesehatan si kecil telah diperbarui.",
-      });
+    },
+    onError: (error: any) => {
+      console.error("AI Trigger Error:", error.response?.data || error.message);
     },
   });
 
@@ -36,5 +46,6 @@ export const useMotherAiAnalysis = (childId: string) => {
     isLoading: query.isLoading,
     isTriggering: mutation.isPending,
     triggerAnalysis: mutation.mutate,
+    isError: query.isError || mutation.isError,
   };
 };

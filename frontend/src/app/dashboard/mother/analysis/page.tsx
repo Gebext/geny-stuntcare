@@ -18,7 +18,7 @@ export default function MotherAnalysisSelectionPage() {
         </div>
         <div>
           <h1 className="text-base md:text-2xl font-bold tracking-tight">
-            Analisi Ai
+            Analisis Ai
           </h1>
           <p className="text-teal-50/80 text-[9px] md:text-sm font-medium mt-0.5">
             Sistem kami menganalisis data antropometri dan pola makan untuk

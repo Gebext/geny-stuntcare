@@ -1,29 +1,38 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  OnModuleInit,
+  ServiceUnavailableException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import Groq from 'groq-sdk';
 import { PrismaService } from 'src/prisma/prismaservice';
-import { AiAnalysisResponseDto } from '../dtos/ai-analysis.dto';
 
 @Injectable()
-export class AiService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+export class AiService implements OnModuleInit {
+  private readonly logger = new Logger(AiService.name);
+  private groq: Groq;
 
-  constructor(private prisma: PrismaService) {
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  constructor(private prisma: PrismaService) {}
+
+  onModuleInit() {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) return;
+    this.groq = new Groq({ apiKey });
   }
 
-  async getStoredAnalysis(
-    childId: string,
-  ): Promise<AiAnalysisResponseDto | null> {
+  async getStoredAnalysis(childId: string) {
     const analysis = await this.prisma.aiAnalysis.findUnique({
       where: { childId },
     });
-    if (!analysis) return null;
-    return analysis as unknown as AiAnalysisResponseDto;
+    if (!analysis) throw new NotFoundException('Belum ada riwayat analisis.');
+    return analysis;
   }
 
-  async runCalculationAndAi(childId: string): Promise<AiAnalysisResponseDto> {
+  async runCalculationAndAi(childId: string) {
+    this.logger.log(`[START] Diagnosis Tegas untuk Child ID: ${childId}`);
+
     const child = await this.prisma.childProfile.findUnique({
       where: { id: childId },
       include: {
@@ -34,82 +43,128 @@ export class AiService {
       },
     });
 
-    if (!child) throw new NotFoundException('Data anak tidak ditemukan');
+    if (!child) throw new NotFoundException('Anak tidak ditemukan');
+    const latest = child.anthropometries[0];
+    if (!latest) throw new NotFoundException('Data antropometri tidak ada');
 
-    // Logic Skor Manual (Bisa kamu perhalus rumusnya nanti)
-    const weightScore = child.anthropometries[0] ? 85 : 50;
-    const heightScore = child.anthropometries[0] ? 82 : 50;
-    const nutritionScore = child.nutritionHistories.length >= 3 ? 90 : 60;
-    const immScore = child.immunizations.length >= 4 ? 100 : 70;
-    const saniScore = child.mother?.environment?.cleanWater ? 95 : 60;
-
-    const totalScore = Math.round(
-      (weightScore + heightScore + nutritionScore + immScore + saniScore) / 5,
+    const ageMonths = this.calculateAge(child.birthDate);
+    // Hitung Z-Score (BB/U) secara manual sebagai referensi AI
+    const zScore = this.calculateZScore(
+      latest.weightKg,
+      child.gender,
+      ageMonths,
     );
 
-    // AI Advice via Gemini
-    const aiResult = await this.getAiAdvice(child, totalScore);
-
-    const result = await this.prisma.aiAnalysis.upsert({
-      where: { childId },
-      update: {
-        score: totalScore,
-        status: totalScore > 80 ? 'Risiko Rendah' : 'Perlu Pantauan',
-        summary: aiResult.summary,
-        weightScore,
-        heightScore,
-        nutritionScore,
-        sanitationScore: saniScore,
-        immunizationScore: immScore,
-        recommendations: aiResult.recs,
-      },
-      create: {
-        childId,
-        score: totalScore,
-        status: totalScore > 80 ? 'Risiko Rendah' : 'Perlu Pantauan',
-        summary: aiResult.summary,
-        weightScore,
-        heightScore,
-        nutritionScore,
-        sanitationScore: saniScore,
-        immunizationScore: immScore,
-        recommendations: aiResult.recs,
-      },
-    });
-
-    return result as unknown as AiAnalysisResponseDto;
-  }
-
-  private async getAiAdvice(child: any, score: number) {
-    const prompt = `Analisis kesehatan balita ${child.name} (Skor: ${score}). 
-    Berikan JSON murni: { "summary": "1 kalimat", "recs": [{"title": "...", "desc": "...", "type": "WARNING/INFO/SUCCESS"}] }. 
-    Wajib 3 rekomendasi. Gunakan Bahasa Indonesia.`;
+    // Ambil hasil diagnosa dari AI
+    const aiResult = await this.getAiMedicalAdvice(
+      child,
+      latest,
+      ageMonths,
+      zScore,
+    );
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const text = result.response.text().replace(/```json|```/g, '');
-      return JSON.parse(text);
+      return await this.prisma.aiAnalysis.upsert({
+        where: { childId },
+        update: {
+          score: aiResult.score,
+          zScore: zScore, // SIMPAN KE DB
+          status: aiResult.status,
+          summary: aiResult.summary,
+          weightScore: aiResult.weightScore,
+          heightScore: aiResult.heightScore,
+          nutritionScore: aiResult.nutritionScore,
+          sanitationScore: aiResult.sanitationScore,
+          immunizationScore: aiResult.immunizationScore,
+          recommendations: aiResult.recommendations,
+        },
+        create: {
+          childId,
+          score: aiResult.score,
+          zScore: zScore, // SIMPAN KE DB
+          status: aiResult.status,
+          summary: aiResult.summary,
+          weightScore: aiResult.weightScore,
+          heightScore: aiResult.heightScore,
+          nutritionScore: aiResult.nutritionScore,
+          sanitationScore: aiResult.sanitationScore,
+          immunizationScore: aiResult.immunizationScore,
+          recommendations: aiResult.recommendations,
+        },
+      });
     } catch (e) {
-      return {
-        summary: 'Analisis rutin kesehatan anak.',
-        recs: [
-          {
-            title: 'Nutrisi',
-            desc: 'Berikan protein hewani setiap hari.',
-            type: 'INFO',
-          },
-          {
-            title: 'Pantau TB/BB',
-            desc: 'Rutin ke Posyandu sebulan sekali.',
-            type: 'SUCCESS',
-          },
-          {
-            title: 'Sanitasi',
-            desc: 'Pastikan kebersihan alat makan.',
-            type: 'WARNING',
-          },
-        ],
-      };
+      this.logger.error(`[DB ERROR] ${e.message}`);
+      throw new InternalServerErrorException('Gagal menyimpan hasil diagnosa.');
     }
+  }
+
+  private async getAiMedicalAdvice(
+    child: any,
+    latest: any,
+    ageMonths: number,
+    zScore: number,
+  ) {
+    this.logger.log(`[AI REQUEST] Menjalankan Llama-3 (Medical Mode)...`);
+
+    const prompt = `
+    PERAN: Anda adalah Dokter Spesialis Anak dan Ahli Gizi Klinis.
+    TUGAS: Analisis data medis dan berikan diagnosis yang JUJUR, TEGAS, dan AKURAT. 
+    DILARANG menggunakan bahasa halus (eufemisme). Jika kondisi buruk, katakan buruk.
+
+    DATA PASIEN:
+    - Nama: ${child.name} | Umur: ${ageMonths} bulan | JK: ${child.gender}
+    - BB: ${latest.weightKg} kg | TB: ${latest.heightCm} cm
+    - Z-Score BB/U (Input): ${zScore.toFixed(2)}
+
+    INSTRUKSI PENILAIAN:
+    1. STATUS GIZI: Gunakan standar WHO. Jika Z-Score < -3 sebut "Gizi Buruk", -3 s/d -2 sebut "Gizi Kurang", > 2 sebut "Obesitas".
+    2. SCORING: Berikan skor keseluruhan (0-100). Jika status Gizi Buruk/Kurang, skor HARUS di bawah 45.
+    3. SUMMARY: Kalimat pertama harus diagnosis medis. Kalimat kedua harus konsekuensi klinis jika tidak ditangani segera (misal: risiko stunting permanen atau penurunan kognitif).
+    4. BREAKDOWN SKOR (0-100): Berikan skor weight, height, nutrition, sanitation, dan immunization secara objektif.
+
+    OUTPUT JSON MURNI:
+    {
+      "score": number,
+      "status": "string",
+      "summary": "string",
+      "weightScore": number,
+      "heightScore": number,
+      "nutritionScore": number,
+      "sanitationScore": number,
+      "immunizationScore": number,
+      "recommendations": [
+        { "title": "string", "desc": "string", "type": "SUCCESS" | "WARNING" | "INFO" }
+      ]
+    }
+    `;
+
+    try {
+      const completion = await this.groq.chat.completions.create({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'llama-3.3-70b-versatile',
+        response_format: { type: 'json_object' },
+        temperature: 0.1, // Sangat rendah agar AI tidak "kreatif" dan tetap pada fakta medis
+      });
+
+      return JSON.parse(completion.choices[0].message.content);
+    } catch (error) {
+      this.logger.error(`[AI CRITICAL ERROR] ${error.message}`);
+      throw new ServiceUnavailableException('Gagal melakukan diagnosa AI.');
+    }
+  }
+
+  private calculateZScore(w: number, g: string, a: number) {
+    // Referensi kasar Median WHO BB/U untuk 0-24 bulan
+    const median = g === 'MALE' ? 9.6 : 8.9;
+    return (w - median) / 1.1;
+  }
+
+  private calculateAge(birth: Date) {
+    const today = new Date();
+    return (
+      (today.getFullYear() - birth.getFullYear()) * 12 +
+      today.getMonth() -
+      birth.getMonth()
+    );
   }
 }

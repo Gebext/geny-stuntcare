@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 
@@ -11,35 +11,40 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(private userRepository: UserRepository) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const { password, ...userData } = createUserDto;
-    const passwordHash = await bcrypt.hash(password, 10);
+    this.logger.log(
+      `Proses pembuatan user baru untuk email: ${createUserDto.email}`,
+    );
 
-    const createdUser = await this.userRepository.create({
-      ...userData,
-      passwordHash,
-    });
+    try {
+      const { password, ...userData } = createUserDto;
+      const passwordHash = await bcrypt.hash(password, 10);
 
-    return plainToInstance(UserResponseDto, createdUser);
+      const createdUser = await this.userRepository.create({
+        ...userData,
+        passwordHash,
+      });
+
+      this.logger.log(`User berhasil dibuat dengan ID: ${createdUser.id}`);
+      return plainToInstance(UserResponseDto, createdUser);
+    } catch (error) {
+      this.logger.error(`Gagal membuat user: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
-  /**
-   * Mengambil semua user dengan filter Role
-   */
   async findAll(query: UserQueryDto): Promise<any> {
-    const { page, limit, search, email, role } = query; // Destructure 'role' di sini
-    const skip = (page - 1) * limit;
+    this.logger.debug(`Fetching users dengan filter: ${JSON.stringify(query)}`);
 
+    const { page, limit, search, email, role } = query;
+    const skip = (page - 1) * limit;
     const where: Prisma.UserWhereInput = {};
 
-    // 1. Filtering by Email
-    if (email) {
-      where.email = email;
-    }
-
-    // 2. Searching (Name atau Email)
+    if (email) where.email = email;
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -47,113 +52,152 @@ export class UserService {
       ];
     }
 
-    // 3. TAMBAHKAN: Filtering by Role
     if (role && role !== 'ALL') {
       where.roles = {
         some: {
-          role: {
-            name: role.toUpperCase(),
-          },
+          role: { name: role.toUpperCase() },
         },
       };
     }
 
-    // Dapatkan data dan total count
-    const [users, totalCount] = await this.userRepository.findManyAndCount({
-      skip,
-      take: limit,
-      where,
-    });
+    try {
+      const [users, totalCount] = await this.userRepository.findManyAndCount({
+        skip,
+        take: limit,
+        where,
+      });
 
-    const lastPage = Math.ceil(totalCount / limit);
+      this.logger.log(
+        `Berhasil mengambil ${users.length} user (Total: ${totalCount})`,
+      );
 
-    return {
-      users: plainToInstance(UserResponseDto, users),
-      meta: {
-        total: totalCount,
-        page: page,
-        limit: limit,
-        lastPage: lastPage,
-      },
-    };
+      return {
+        users: plainToInstance(UserResponseDto, users),
+        meta: {
+          total: totalCount,
+          page,
+          limit,
+          lastPage: Math.ceil(totalCount / limit),
+        },
+      };
+    } catch (error) {
+      this.logger.error(`Gagal mengambil daftar user: ${error.message}`);
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<UserResponseDto> {
+    this.logger.debug(`Mencari user dengan ID: ${id}`);
+
     const user = await this.userRepository.findOneById(id);
     if (!user) {
+      this.logger.warn(`User dengan ID ${id} tidak ditemukan`);
       throw new NotFoundException(`User with ID ${id} not found.`);
     }
+
     return plainToInstance(UserResponseDto, user);
   }
 
   async findByRole(roleName: string): Promise<UserResponseDto[]> {
+    this.logger.log(`Mencari users dengan role: ${roleName}`);
+
     const users = await this.userRepository.findMany({
       where: {
         roles: {
           some: {
-            role: {
-              name: roleName.toUpperCase(),
-            },
+            role: { name: roleName.toUpperCase() },
           },
         },
       },
       include: {
         roles: {
-          include: {
-            role: true,
-          },
+          include: { role: true },
         },
       },
     });
 
+    this.logger.log(`Ditemukan ${users.length} user dengan role ${roleName}`);
     return plainToInstance(UserResponseDto, users);
   }
+
   async update(
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    const existingUser = await this.userRepository.findOneById(id);
-    if (!existingUser)
-      throw new NotFoundException(`User with ID ${id} not found.`);
+    this.logger.log(`Proses update user ID: ${id}`);
 
-    // 1. Pisahkan password mentah
+    const existingUser = await this.userRepository.findOneById(id);
+    if (!existingUser) {
+      this.logger.warn(`Update gagal: User ID ${id} tidak ditemukan`);
+      throw new NotFoundException(`User with ID ${id} not found.`);
+    }
+
     const { password, ...restData } = updateUserDto;
     const finalData: any = { ...restData };
 
-    // 2. Jika ada password, hash dan masukkan ke field passwordHash
     if (password) {
+      this.logger.debug(`Mengupdate password untuk user ID: ${id}`);
       finalData.passwordHash = await bcrypt.hash(password, 10);
     }
 
-    // 3. Pastikan field 'password' mentah dibuang agar tidak masuk ke repository
+    // Pastikan data password mentah tidak masuk ke repo
     delete finalData.password;
 
-    const updatedUser = await this.userRepository.update(id, finalData);
-    return plainToInstance(UserResponseDto, updatedUser);
+    try {
+      const updatedUser = await this.userRepository.update(id, finalData);
+      this.logger.log(`User ID: ${id} berhasil diperbarui`);
+      return plainToInstance(UserResponseDto, updatedUser);
+    } catch (error) {
+      this.logger.error(`Gagal memperbarui user ID ${id}: ${error.message}`);
+      throw error;
+    }
   }
 
   async remove(id: string): Promise<UserResponseDto> {
-    const existingUser = await this.userRepository.findOneById(id);
-    if (!existingUser)
-      throw new NotFoundException(`User with ID ${id} not found.`);
+    this.logger.log(`Mencoba menghapus user ID: ${id}`);
 
-    const removedUser = await this.userRepository.remove(id);
-    return plainToInstance(UserResponseDto, removedUser);
+    const existingUser = await this.userRepository.findOneById(id);
+    if (!existingUser) {
+      this.logger.warn(`Hapus gagal: User ID ${id} tidak ditemukan`);
+      throw new NotFoundException(`User with ID ${id} not found.`);
+    }
+
+    try {
+      const removedUser = await this.userRepository.remove(id);
+      this.logger.log(`User ID: ${id} berhasil dihapus dari database`);
+      return plainToInstance(UserResponseDto, removedUser);
+    } catch (error) {
+      this.logger.error(`Gagal menghapus user ID ${id}: ${error.message}`);
+      throw error;
+    }
   }
 
   async adminCreateUser(
     createUserDto: CreateUserDto,
   ): Promise<UserResponseDto> {
-    const { password, role, ...userData } = createUserDto;
-    const passwordToHash = password || 'Password123!';
-    const passwordHash = await bcrypt.hash(passwordToHash, 10);
+    const { email, role } = createUserDto;
+    this.logger.log(
+      `Admin membuat user baru: ${email} sebagai ${role || 'KADER'}`,
+    );
 
-    const createdUser = await this.userRepository.create({
-      ...userData,
-      passwordHash,
-      role: role ? role.toUpperCase() : 'KADER',
-    });
+    try {
+      const { password, role: roleInput, ...userData } = createUserDto;
+      const passwordToHash = password || 'Password123!';
+      const passwordHash = await bcrypt.hash(passwordToHash, 10);
 
-    return plainToInstance(UserResponseDto, createdUser);
+      const createdUser = await this.userRepository.create({
+        ...userData,
+        passwordHash,
+        role: roleInput ? roleInput.toUpperCase() : 'KADER',
+      });
+
+      this.logger.log(
+        `User (Admin Created) berhasil dibuat dengan ID: ${createdUser.id}`,
+      );
+      return plainToInstance(UserResponseDto, createdUser);
+    } catch (error) {
+      this.logger.error(`Admin gagal membuat user: ${error.message}`);
+      throw error;
+    }
   }
 }
