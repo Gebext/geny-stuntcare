@@ -213,9 +213,7 @@ export default function GenyChatPage() {
                 )}
               >
                 <div className="prose prose-sm prose-slate max-w-none">
-                  <ReactMarkdown>
-                    {msg.message}
-                  </ReactMarkdown>
+                  <ReactMarkdown>{msg.message}</ReactMarkdown>
                 </div>
               </div>
               <p className="text-[7px] md:text-[8px] font-black text-slate-300 uppercase px-1">
