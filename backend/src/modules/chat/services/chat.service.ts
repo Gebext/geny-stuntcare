@@ -1,182 +1,151 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prismaservice';
 import { SendMessageDto } from '../dtos/send.message';
-import fetch from 'node-fetch';
+import Groq from 'groq-sdk';
 
 @Injectable()
-export class ChatService {
-  /**
-   * ⚠️ HARD CODE (DEV ONLY)
-   */
-  private readonly apiKey = 'AIzaSyBcbh0OXjNi0yVFwM4imn85sOjzXStYUG4';
-
-  /**
-   * URUTAN MODEL (PRIORITAS → HEMAT)
-   */
-  private readonly GEMINI_MODELS = [
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemini-3-flash',
-  ];
+export class ChatService implements OnModuleInit {
+  private readonly logger = new Logger(ChatService.name);
+  private groq: Groq;
 
   constructor(private prisma: PrismaService) {}
 
-  /* =====================================================
-   * MAIN CHAT HANDLER
-   * ===================================================== */
+  onModuleInit() {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (apiKey) this.groq = new Groq({ apiKey });
+  }
+
   async handleMessage(userId: string, dto: SendMessageDto) {
-    /* 1️⃣ Ambil data anak */
-    const children = await this.prisma.childProfile.findMany({
-      where: { mother: { userId } },
+    // 1. Ambil Data Super Lengkap sesuai Schema Prisma kamu
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
       include: {
-        anthropometries: { orderBy: { measurementDate: 'desc' }, take: 1 },
-        nutritionHistories: { orderBy: { recordedAt: 'desc' }, take: 2 },
-        healthHistories: { orderBy: { diagnosisDate: 'desc' }, take: 1 },
+        motherProfile: {
+          include: {
+            environment: true,
+            childProfiles: {
+              include: {
+                anthropometries: {
+                  orderBy: { measurementDate: 'desc' },
+                  take: 5,
+                },
+                nutritionHistories: {
+                  orderBy: { recordedAt: 'desc' },
+                  take: 3,
+                },
+                aiAnalysis: true, // Akses skor gizi & z-score
+                healthHistories: {
+                  orderBy: { diagnosisDate: 'desc' },
+                  take: 2,
+                },
+              },
+            },
+          },
+        },
       },
     });
 
-    /* 2️⃣ Kelola sesi */
+    if (!user?.motherProfile)
+      throw new NotFoundException('Profil belum lengkap');
+
+    // 2. Data Contextual untuk AI
+    const familyContext = {
+      mama: {
+        nama: user.name,
+        isHamil: user.motherProfile.isPregnant,
+        trimester: user.motherProfile.trimester,
+        sanitasi: user.motherProfile.environment?.sanitation || 'Belum diisi',
+        airBersih: user.motherProfile.environment?.cleanWater
+          ? 'Ada'
+          : 'Tidak Ada',
+      },
+      anakAnak: user.motherProfile.childProfiles.map((c) => ({
+        nama: c.name,
+        usia: this.calculateAge(c.birthDate) + ' bulan',
+        gender: c.gender,
+        hasilAI: c.aiAnalysis
+          ? {
+              status: c.aiAnalysis.status,
+              skorGizi: c.aiAnalysis.score,
+              zScore: c.aiAnalysis.zScore,
+              rekomendasi: c.aiAnalysis.recommendations,
+            }
+          : 'Belum ada analisis mendalam',
+        riwayatFisik: c.anthropometries.map((a) => ({
+          bb: a.weightKg,
+          tb: a.heightCm,
+          tgl: a.measurementDate,
+        })),
+        makanTerakhir: c.nutritionHistories[0]?.foodType || 'Belum tercatat',
+      })),
+    };
+
+    // 3. Manage Session
     let session;
     if (dto.sessionId) {
       session = await this.prisma.chatSession.findUnique({
         where: { id: dto.sessionId },
       });
-      if (!session) {
-        throw new NotFoundException('Sesi chat tidak ditemukan');
-      }
-    } else {
+    }
+    if (!session) {
       session = await this.prisma.chatSession.create({
-        data: {
-          userId,
-          contextSnapshot: children.length ? children : { info: 'No data' },
-        },
+        data: { userId, contextSnapshot: familyContext as any },
       });
     }
 
-    /* 3️⃣ Simpan pesan user */
-    await this.prisma.chatMessage.create({
-      data: {
-        sessionId: session.id,
-        sender: 'USER',
-        message: dto.message,
-      },
-    });
-
-    /* 4️⃣ Ringkas context anak (hemat token) */
-    const childrenContext = children
-      .map((c, i) => {
-        const fisik = c.anthropometries[0]
-          ? `BB ${c.anthropometries[0].weightKg}kg, TB ${c.anthropometries[0].heightCm}cm`
-          : 'Belum ada data fisik';
-
-        const kesehatan = c.healthHistories[0]
-          ? c.healthHistories[0].diseaseName
-          : 'Tidak ada riwayat penyakit';
-
-        return `ANAK ${i + 1}
-Nama: ${c.name}
-JK: ${c.gender}
-TTL: ${c.birthDate}
-Fisik: ${fisik}
-Kesehatan: ${kesehatan}`;
-      })
-      .join('\n\n');
-
-    /* 5️⃣ System Prompt */
+    // 4. Advanced System Prompt
     const systemPrompt = `
-Anda adalah GENY, asisten ahli kesehatan anak & pencegahan stunting.
-User dipanggil "Mama Cantik".
+      Anda adalah GENY, AI Dokter Spesialis Anak & Nutrisi. 
+      Tugas: Bantu Mama ${user.name} memantau tumbuh kembang anaknya.
+      
+      KONTEKS DATA KELUARGA:
+      ${JSON.stringify(familyContext, null, 2)}
 
-DATA ANAK:
-${childrenContext}
+      ATURAN:
+      - Gunakan data 'hasilAI' (zScore & skorGizi) untuk memberikan diagnosa.
+      - Jika Mama tanya soal gizi, hubungkan dengan riwayat makan dan sanitasi rumahnya.
+      - Panggil "Mama ${
+        user.name
+      }". Bahasa harus empati, detail, dan profesional.
+      - Gunakan Bullet Points.
+    `;
 
-ATURAN WAJIB:
-- Jawaban ramah & empatik
-- Gunakan bullet point
-- Jika ada indikasi stunting → peringatan lembut
-- Jangan menakut-nakuti
-`;
-
-    const finalPrompt = `
-${systemPrompt}
-
-PERTANYAAN MAMA CANTIK:
-${dto.message}
-`;
-
-    /* 6️⃣ Call Gemini (Fallback) */
-    const ai = await this.callGeminiWithFallback(finalPrompt);
-
-    /* 7️⃣ Simpan jawaban AI */
-    const saved = await this.prisma.chatMessage.create({
-      data: {
-        sessionId: session.id,
-        sender: 'GENY_AI',
-        message: ai.text,
-      },
+    // 5. Groq Llama-3.3-70b
+    const completion = await this.groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: dto.message },
+      ],
+      temperature: 0.5,
     });
 
-    return {
-      sessionId: session.id,
-      modelUsed: ai.model,
-      message: saved,
-    };
+    const aiMsg = completion.choices[0].message.content;
+
+    // 6. Simpan pesan & return sesuai format yang diminta Controller
+    await this.prisma.chatMessage.create({
+      data: { sessionId: session.id, sender: 'USER', message: dto.message },
+    });
+
+    const savedAi = await this.prisma.chatMessage.create({
+      data: { sessionId: session.id, sender: 'GENY_AI', message: aiMsg },
+    });
+
+    return { sessionId: session.id, message: savedAi };
   }
 
-  /* =====================================================
-   * MULTI MODEL FALLBACK ENGINE
-   * ===================================================== */
-  private async callGeminiWithFallback(
-    prompt: string,
-  ): Promise<{ model: string; text: string }> {
-    let lastError: any;
-
-    for (const model of this.GEMINI_MODELS) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
-
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-          }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          const status = data?.error?.status;
-          const message = data?.error?.message;
-
-          if (res.status === 429 || status === 'RESOURCE_EXHAUSTED') {
-            console.warn(
-              `[Geny] Model ${model} limit tercapai, pindah model...`,
-            );
-            lastError = message;
-            continue;
-          }
-
-          throw new Error(message || 'Gemini error');
-        }
-
-        return {
-          model,
-          text: data.candidates[0].content.parts[0].text,
-        };
-      } catch (err: any) {
-        lastError = err.message;
-      }
-    }
-
-    throw new Error('Geny sedang istirahat 😴. Semua model sedang kelelahan.');
+  private calculateAge(birth: Date) {
+    const diff = Date.now() - birth.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24 * 30.44));
   }
 
-  /* =====================================================
-   * CHAT HISTORY
-   * ===================================================== */
   async getSessionHistory(sessionId: string) {
-    return this.prisma.chatMessage.findMany({
+    return await this.prisma.chatMessage.findMany({
       where: { sessionId },
       orderBy: { createdAt: 'asc' },
     });

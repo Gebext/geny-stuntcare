@@ -103,8 +103,10 @@ export default function GenyChatPage() {
           setActiveSessionId(res.data.sessionId);
           localStorage.setItem("geny_session_id", res.data.sessionId);
         }
-        setLocalMessages((prev) => [...prev, res.data.message]);
-        refetch();
+        // Clear local messages after refetch - backend now has all messages
+        await refetch();
+        setLocalMessages([]);
+        sessionStorage.removeItem("geny_temp_msgs");
       }
     } catch (err: any) {
       setLocalMessages((prev) => prev.slice(0, -1));

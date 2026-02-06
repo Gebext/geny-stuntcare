@@ -8,146 +8,136 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var ChatService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatService = void 0;
 const common_1 = require("@nestjs/common");
 const prismaservice_1 = require("../../../prisma/prismaservice");
-const node_fetch_1 = require("node-fetch");
-let ChatService = class ChatService {
+const groq_sdk_1 = require("groq-sdk");
+let ChatService = ChatService_1 = class ChatService {
     constructor(prisma) {
         this.prisma = prisma;
-        this.apiKey = 'AIzaSyBcbh0OXjNi0yVFwM4imn85sOjzXStYUG4';
-        this.GEMINI_MODELS = [
-            'gemini-2.5-flash',
-            'gemini-2.5-flash-lite',
-            'gemini-3-flash',
-        ];
+        this.logger = new common_1.Logger(ChatService_1.name);
+    }
+    onModuleInit() {
+        const apiKey = process.env.GROQ_API_KEY;
+        if (apiKey)
+            this.groq = new groq_sdk_1.default({ apiKey });
     }
     async handleMessage(userId, dto) {
-        const children = await this.prisma.childProfile.findMany({
-            where: { mother: { userId } },
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
             include: {
-                anthropometries: { orderBy: { measurementDate: 'desc' }, take: 1 },
-                nutritionHistories: { orderBy: { recordedAt: 'desc' }, take: 2 },
-                healthHistories: { orderBy: { diagnosisDate: 'desc' }, take: 1 },
+                motherProfile: {
+                    include: {
+                        environment: true,
+                        childProfiles: {
+                            include: {
+                                anthropometries: {
+                                    orderBy: { measurementDate: 'desc' },
+                                    take: 5,
+                                },
+                                nutritionHistories: {
+                                    orderBy: { recordedAt: 'desc' },
+                                    take: 3,
+                                },
+                                aiAnalysis: true,
+                                healthHistories: {
+                                    orderBy: { diagnosisDate: 'desc' },
+                                    take: 2,
+                                },
+                            },
+                        },
+                    },
+                },
             },
         });
+        if (!user?.motherProfile)
+            throw new common_1.NotFoundException('Profil belum lengkap');
+        const familyContext = {
+            mama: {
+                nama: user.name,
+                isHamil: user.motherProfile.isPregnant,
+                trimester: user.motherProfile.trimester,
+                sanitasi: user.motherProfile.environment?.sanitation || 'Belum diisi',
+                airBersih: user.motherProfile.environment?.cleanWater
+                    ? 'Ada'
+                    : 'Tidak Ada',
+            },
+            anakAnak: user.motherProfile.childProfiles.map((c) => ({
+                nama: c.name,
+                usia: this.calculateAge(c.birthDate) + ' bulan',
+                gender: c.gender,
+                hasilAI: c.aiAnalysis
+                    ? {
+                        status: c.aiAnalysis.status,
+                        skorGizi: c.aiAnalysis.score,
+                        zScore: c.aiAnalysis.zScore,
+                        rekomendasi: c.aiAnalysis.recommendations,
+                    }
+                    : 'Belum ada analisis mendalam',
+                riwayatFisik: c.anthropometries.map((a) => ({
+                    bb: a.weightKg,
+                    tb: a.heightCm,
+                    tgl: a.measurementDate,
+                })),
+                makanTerakhir: c.nutritionHistories[0]?.foodType || 'Belum tercatat',
+            })),
+        };
         let session;
         if (dto.sessionId) {
             session = await this.prisma.chatSession.findUnique({
                 where: { id: dto.sessionId },
             });
-            if (!session) {
-                throw new common_1.NotFoundException('Sesi chat tidak ditemukan');
-            }
         }
-        else {
+        if (!session) {
             session = await this.prisma.chatSession.create({
-                data: {
-                    userId,
-                    contextSnapshot: children.length ? children : { info: 'No data' },
-                },
+                data: { userId, contextSnapshot: familyContext },
             });
         }
-        await this.prisma.chatMessage.create({
-            data: {
-                sessionId: session.id,
-                sender: 'USER',
-                message: dto.message,
-            },
-        });
-        const childrenContext = children
-            .map((c, i) => {
-            const fisik = c.anthropometries[0]
-                ? `BB ${c.anthropometries[0].weightKg}kg, TB ${c.anthropometries[0].heightCm}cm`
-                : 'Belum ada data fisik';
-            const kesehatan = c.healthHistories[0]
-                ? c.healthHistories[0].diseaseName
-                : 'Tidak ada riwayat penyakit';
-            return `ANAK ${i + 1}
-Nama: ${c.name}
-JK: ${c.gender}
-TTL: ${c.birthDate}
-Fisik: ${fisik}
-Kesehatan: ${kesehatan}`;
-        })
-            .join('\n\n');
         const systemPrompt = `
-Anda adalah GENY, asisten ahli kesehatan anak & pencegahan stunting.
-User dipanggil "Mama Cantik".
+      Anda adalah GENY, AI Dokter Spesialis Anak & Nutrisi. 
+      Tugas: Bantu Mama ${user.name} memantau tumbuh kembang anaknya.
+      
+      KONTEKS DATA KELUARGA:
+      ${JSON.stringify(familyContext, null, 2)}
 
-DATA ANAK:
-${childrenContext}
-
-ATURAN WAJIB:
-- Jawaban ramah & empatik
-- Gunakan bullet point
-- Jika ada indikasi stunting → peringatan lembut
-- Jangan menakut-nakuti
-`;
-        const finalPrompt = `
-${systemPrompt}
-
-PERTANYAAN MAMA CANTIK:
-${dto.message}
-`;
-        const ai = await this.callGeminiWithFallback(finalPrompt);
-        const saved = await this.prisma.chatMessage.create({
-            data: {
-                sessionId: session.id,
-                sender: 'GENY_AI',
-                message: ai.text,
-            },
+      ATURAN:
+      - Gunakan data 'hasilAI' (zScore & skorGizi) untuk memberikan diagnosa.
+      - Jika Mama tanya soal gizi, hubungkan dengan riwayat makan dan sanitasi rumahnya.
+      - Panggil "Mama ${user.name}". Bahasa harus empati, detail, dan profesional.
+      - Gunakan Bullet Points.
+    `;
+        const completion = await this.groq.chat.completions.create({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: dto.message },
+            ],
+            temperature: 0.5,
         });
-        return {
-            sessionId: session.id,
-            modelUsed: ai.model,
-            message: saved,
-        };
+        const aiMsg = completion.choices[0].message.content;
+        await this.prisma.chatMessage.create({
+            data: { sessionId: session.id, sender: 'USER', message: dto.message },
+        });
+        const savedAi = await this.prisma.chatMessage.create({
+            data: { sessionId: session.id, sender: 'GENY_AI', message: aiMsg },
+        });
+        return { sessionId: session.id, message: savedAi };
     }
-    async callGeminiWithFallback(prompt) {
-        let lastError;
-        for (const model of this.GEMINI_MODELS) {
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
-                const res = await (0, node_fetch_1.default)(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                    }),
-                });
-                const data = await res.json();
-                if (!res.ok) {
-                    const status = data?.error?.status;
-                    const message = data?.error?.message;
-                    if (res.status === 429 || status === 'RESOURCE_EXHAUSTED') {
-                        console.warn(`[Geny] Model ${model} limit tercapai, pindah model...`);
-                        lastError = message;
-                        continue;
-                    }
-                    throw new Error(message || 'Gemini error');
-                }
-                return {
-                    model,
-                    text: data.candidates[0].content.parts[0].text,
-                };
-            }
-            catch (err) {
-                lastError = err.message;
-            }
-        }
-        throw new Error('Geny sedang istirahat 😴. Semua model sedang kelelahan.');
+    calculateAge(birth) {
+        const diff = Date.now() - birth.getTime();
+        return Math.floor(diff / (1000 * 60 * 60 * 24 * 30.44));
     }
     async getSessionHistory(sessionId) {
-        return this.prisma.chatMessage.findMany({
+        return await this.prisma.chatMessage.findMany({
             where: { sessionId },
             orderBy: { createdAt: 'asc' },
         });
     }
 };
 exports.ChatService = ChatService;
-exports.ChatService = ChatService = __decorate([
+exports.ChatService = ChatService = ChatService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prismaservice_1.PrismaService])
 ], ChatService);

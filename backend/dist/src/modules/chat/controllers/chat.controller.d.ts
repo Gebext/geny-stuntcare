@@ -5,7 +5,6 @@ export declare class ChatController {
     constructor(chatService: ChatService);
     sendMessage(req: any, dto: SendMessageDto): Promise<{
         sessionId: any;
-        modelUsed: string;
         message: {
             id: string;
             sessionId: string;

@@ -1,13 +1,14 @@
+import { OnModuleInit } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prismaservice';
 import { SendMessageDto } from '../dtos/send.message';
-export declare class ChatService {
+export declare class ChatService implements OnModuleInit {
     private prisma;
-    private readonly apiKey;
-    private readonly GEMINI_MODELS;
+    private readonly logger;
+    private groq;
     constructor(prisma: PrismaService);
+    onModuleInit(): void;
     handleMessage(userId: string, dto: SendMessageDto): Promise<{
         sessionId: any;
-        modelUsed: string;
         message: {
             id: string;
             sessionId: string;
@@ -16,7 +17,7 @@ export declare class ChatService {
             createdAt: Date;
         };
     }>;
-    private callGeminiWithFallback;
+    private calculateAge;
     getSessionHistory(sessionId: string): Promise<{
         id: string;
         sessionId: string;
