@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Heart, Sparkles } from "lucide-react";
 import Image from "next/image";
 import HeroImage from "../../../public/assets/hero-illustration.png";
+import Link from "next/link";
 
 export const HeroSection = () => {
   return (
@@ -42,11 +43,14 @@ export const HeroSection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="hero" size="xl">
-                Mulai Sekarang
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-              <a
+              <Link href={"/login"}>
+                <Button variant="hero" size="xl">
+                  Mulai Sekarang
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+              </Link>
+
+              {/* <a
                 href="https://docs.genystuntcare.cloud"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -54,7 +58,7 @@ export const HeroSection = () => {
                 <Button variant="outline" size="xl">
                   Pelajari Lebih Lanjut
                 </Button>
-              </a>
+              </a> */}
             </div>
           </motion.div>
 

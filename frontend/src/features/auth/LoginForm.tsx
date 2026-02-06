@@ -122,12 +122,12 @@ export const LoginForm = ({
             </div>
 
             <div className="flex justify-end">
-              <button
+              {/* <button
                 type="button"
                 className="text-sm text-primary hover:underline"
               >
                 Lupa password?
-              </button>
+              </button> */}
             </div>
 
             <Button
