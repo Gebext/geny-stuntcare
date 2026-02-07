@@ -78,6 +78,12 @@ let UserRepository = class UserRepository {
             select: this.getUserSelect(),
         });
     }
+    async findOneByPhone(phone) {
+        return this.prisma.user.findFirst({
+            where: { phone },
+            select: this.getUserSelect(),
+        });
+    }
     async update(id, data) {
         const updateData = {};
         if (data.name)

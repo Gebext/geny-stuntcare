@@ -25,6 +25,12 @@ let UserService = UserService_1 = class UserService {
         this.logger.log(`Proses pembuatan user baru untuk email: ${createUserDto.email}`);
         try {
             const { password, ...userData } = createUserDto;
+            if (userData.phone) {
+                const existingPhone = await this.userRepository.findOneByPhone(userData.phone);
+                if (existingPhone) {
+                    throw new common_1.BadRequestException('Nomor HP sudah terdaftar');
+                }
+            }
             const passwordHash = await bcrypt.hash(password, 10);
             const createdUser = await this.userRepository.create({
                 ...userData,

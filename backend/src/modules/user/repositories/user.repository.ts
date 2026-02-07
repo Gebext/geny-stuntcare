@@ -78,6 +78,13 @@ export class UserRepository {
     }) as unknown as UserWithoutHash;
   }
 
+  async findOneByPhone(phone: string): Promise<UserWithoutHash | null> {
+    return this.prisma.user.findFirst({
+      where: { phone },
+      select: this.getUserSelect(),
+    }) as unknown as UserWithoutHash;
+  }
+
   async update(id: string, data: any): Promise<UserWithoutHash> {
     // WHITELISTING: Hanya ambil field yang ada di kolom tabel User
     // Ini buat nyegah error "isActive/roles should not exist"

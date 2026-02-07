@@ -25,7 +25,7 @@ export default function LoginPage() {
   const handleLogin = (email: string, password: string) => {
     loginMutation.mutate({
       payload: {
-        email,
+        identifier: email,
         password,
         role: selectedRole,
       },

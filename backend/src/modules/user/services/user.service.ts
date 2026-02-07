@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 
@@ -22,6 +27,18 @@ export class UserService {
 
     try {
       const { password, ...userData } = createUserDto;
+
+      // Check validation for phone number
+      if (userData.phone) {
+        const existingPhone = await this.userRepository.findOneByPhone(
+          userData.phone,
+        );
+
+        if (existingPhone) {
+          throw new BadRequestException('Nomor HP sudah terdaftar');
+        }
+      }
+
       const passwordHash = await bcrypt.hash(password, 10);
 
       const createdUser = await this.userRepository.create({

@@ -77,13 +77,13 @@ export const LoginForm = ({
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email / Nomor HP</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="nama@email.com"
+                  type="text"
+                  placeholder="nama@email.com atau 0812..."
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"

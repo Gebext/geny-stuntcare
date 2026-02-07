@@ -8,6 +8,7 @@ export declare class UserRepository {
     create(data: any): Promise<UserWithoutHash>;
     findAll(): Promise<UserWithoutHash[]>;
     findOneById(id: string): Promise<UserWithoutHash | null>;
+    findOneByPhone(phone: string): Promise<UserWithoutHash | null>;
     update(id: string, data: any): Promise<UserWithoutHash>;
     remove(id: string): Promise<UserWithoutHash>;
     findMany(params: Prisma.UserFindManyArgs): Promise<UserWithoutHash[]>;

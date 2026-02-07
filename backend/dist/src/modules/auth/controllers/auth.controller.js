@@ -20,7 +20,8 @@ let AuthController = class AuthController {
         this.authService = authService;
     }
     async login(body) {
-        return this.authService.login(body.email, body.password);
+        const identifier = body.email || body.identifier;
+        return this.authService.login(identifier, body.password);
     }
 };
 exports.AuthController = AuthController;

@@ -108,6 +108,10 @@ let ChatService = ChatService_1 = class ChatService {
       - Panggil "Mama ${user.name}". Bahasa harus empati, detail, dan profesional.
       - Gunakan Bullet Points.
     `;
+        if (!this.groq) {
+            this.logger.error('GROQ_API_KEY is not configured');
+            throw new common_1.NotFoundException('Layanan AI belum dikonfigurasi. Hubungi administrator.');
+        }
         const completion = await this.groq.chat.completions.create({
             model: 'llama-3.3-70b-versatile',
             messages: [

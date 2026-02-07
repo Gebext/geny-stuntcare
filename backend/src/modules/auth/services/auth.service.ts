@@ -13,20 +13,22 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(email: string, pass: string) {
-    this.logger.log(`Menerima percobaan login untuk email: ${email}`);
+  async login(identifier: string, pass: string) {
+    this.logger.log(`Menerima percobaan login untuk: ${identifier}`);
 
     // 1. Validasi awal password dari FE
     if (!pass) {
       this.logger.warn(
-        `Login gagal: Password tidak disertakan untuk email ${email}`,
+        `Login gagal: Password tidak disertakan untuk ${identifier}`,
       );
-      throw new UnauthorizedException('Email atau password salah');
+      throw new UnauthorizedException('Email/No. HP atau password salah');
     }
 
     try {
-      const user = await this.prisma.user.findUnique({
-        where: { email },
+      const user = await this.prisma.user.findFirst({
+        where: {
+          OR: [{ email: identifier }, { phone: identifier }],
+        },
         include: {
           roles: {
             include: { role: true },
@@ -37,14 +39,14 @@ export class AuthService {
       // 2. Cek apakah user ada DAN punya passwordHash
       if (!user) {
         this.logger.warn(
-          `Login gagal: User dengan email ${email} tidak ditemukan`,
+          `Login gagal: User dengan identifier ${identifier} tidak ditemukan`,
         );
-        throw new UnauthorizedException('Email atau password salah');
+        throw new UnauthorizedException('Email/No. HP atau password salah');
       }
 
       if (!user.passwordHash) {
         this.logger.warn(
-          `Login gagal: User ${email} mencoba login via password tapi akun menggunakan Social Login`,
+          `Login gagal: User ${identifier} mencoba login via password tapi akun menggunakan Social Login`,
         );
         throw new UnauthorizedException('Metode login tidak sesuai');
       }
@@ -53,8 +55,8 @@ export class AuthService {
       const isMatch = await bcrypt.compare(pass, user.passwordHash);
 
       if (!isMatch) {
-        this.logger.warn(`Login gagal: Password salah untuk email ${email}`);
-        throw new UnauthorizedException('Email atau password salah');
+        this.logger.warn(`Login gagal: Password salah untuk ${identifier}`);
+        throw new UnauthorizedException('Email/No. HP atau password salah');
       }
 
       // 4. Generate Token
@@ -74,7 +76,7 @@ export class AuthService {
     } catch (error) {
       // Mencatat error sistem (misal: database down)
       this.logger.error(
-        `Error pada proses login untuk ${email}: ${error.message}`,
+        `Error pada proses login untuk ${identifier}: ${error.message}`,
         error.stack,
       );
       throw error;

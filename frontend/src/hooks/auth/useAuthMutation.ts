@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 interface LoginPayload {
-  email: string;
+  identifier: string;
   password: string;
   role: string;
 }
@@ -28,7 +28,7 @@ export const useLoginMutation = () => {
   return useMutation({
     mutationFn: async ({ payload }: { payload: LoginPayload }) => {
       const response = await api.post<APIResponse>("/auth/login", {
-        email: payload.email,
+        identifier: payload.identifier,
         password: payload.password,
       });
 
@@ -82,7 +82,7 @@ export const useLoginMutation = () => {
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || "Email atau password salah.";
+        error.response?.data?.message || "Email/No. HP atau password salah.";
       toast({
         variant: "destructive",
         title: "Gagal Login",

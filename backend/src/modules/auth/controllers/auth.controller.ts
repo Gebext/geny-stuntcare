@@ -8,6 +8,8 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() body: any) {
-    return this.authService.login(body.email, body.password);
+    // Support both 'email' (legacy) and 'identifier' fields
+    const identifier = body.email || body.identifier;
+    return this.authService.login(identifier, body.password);
   }
 }
