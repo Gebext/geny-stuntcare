@@ -52,7 +52,7 @@ if ! check_port 3001; then
     exit 1
 fi
 
-npm run start &
+npm run dev &
 DOCS_PID=$!
 echo -e "${GREEN}✓ Docusaurus started (PID: $DOCS_PID)${NC}"
 

@@ -116,6 +116,13 @@ export class ChatService implements OnModuleInit {
     `;
 
     // 5. Groq Llama-3.3-70b
+    if (!this.groq) {
+      this.logger.error('GROQ_API_KEY is not configured');
+      throw new NotFoundException(
+        'Layanan AI belum dikonfigurasi. Hubungi administrator.',
+      );
+    }
+
     const completion = await this.groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [
