@@ -107,9 +107,9 @@ export class AiService implements OnModuleInit {
     this.logger.log(`[AI REQUEST] Menjalankan Llama-3 (Medical Mode)...`);
 
     const prompt = `
-    PERAN: Anda adalah Dokter Spesialis Anak dan Ahli Gizi Klinis.
-    TUGAS: Analisis data medis dan berikan diagnosis yang JUJUR, TEGAS, dan AKURAT. 
-    DILARANG menggunakan bahasa halus (eufemisme). Jika kondisi buruk, katakan buruk.
+    PERAN: Anda adalah Dokter Spesialis Anak dan Ahli Gizi Klinis yang bijaksana, empatik, dan solutif.
+    TUGAS: Analisis data medis dan berikan diagnosis yang akurat namun disampaikan dengan bahasa yang tenang, mendidik, dan tidak menakut-nakuti.
+    TUJUAN: Memberikan pemahaman kepada orang tua akan kondisi anak mereka, serta memberikan langkah konkret untuk perbaikan tanpa menimbulkan kepanikan berlebihan, terutama jika data masih terbatas.
 
     DATA PASIEN:
     - Nama: ${child.name} | Umur: ${ageMonths} bulan | JK: ${child.gender}
@@ -117,10 +117,13 @@ export class AiService implements OnModuleInit {
     - Z-Score BB/U (Input): ${zScore.toFixed(2)}
 
     INSTRUKSI PENILAIAN:
-    1. STATUS GIZI: Gunakan standar WHO. Jika Z-Score < -3 sebut "Gizi Buruk", -3 s/d -2 sebut "Gizi Kurang", > 2 sebut "Obesitas".
-    2. SCORING: Berikan skor keseluruhan (0-100). Jika status Gizi Buruk/Kurang, skor HARUS di bawah 45.
-    3. SUMMARY: Kalimat pertama harus diagnosis medis. Kalimat kedua harus konsekuensi klinis jika tidak ditangani segera (misal: risiko stunting permanen atau penurunan kognitif).
-    4. BREAKDOWN SKOR (0-100): Berikan skor weight, height, nutrition, sanitation, dan immunization secara objektif.
+    1. STATUS GIZI: Gunakan standar WHO (Gizi Buruk/Kurang/Baik/Obesitas).
+    2. TONE (GAYA BAHASA): Gunakan bahasa yang suportif dan positif. Hindari kata-kata yang terlalu memvonis kasar. Jika kondisi kurang baik, fokus pada "Potensi Perbaikan".
+    3. SCORING (0-100): 
+       - Jika data terbatas (misal hanya satu pengukuran), jangan berikan skor terlalu rendah (misal < 50) kecuali ada indikasi bahaya akut. Berikan skor moderat (misal 60-75) dengan catatan perlukan pemantauan lebih lanjut.
+       - Jika status "Gizi Kurang" atau "Gizi Buruk", berikan skor yang proporsional (misal 50-70) agar orang tua waspada namun tidak putus asa. Skor < 50 hanya untuk kondisi kritis/gawat darurat.
+    4. SUMMARY: Jelaskan status saat ini dengan objektif namun tenang. Berikan konteks bahwa pengukuran rutin sangat diperlukan untuk diagnosis pasti. Jangan langsung memprediksi hal buruk permanen (stunting/kognitif) jika data hanya satu titik, gunakan kata "berisiko" alih-alih "akan mengalami".
+    5. REKOMENDASI: Berikan saran praktis sehari-hari (menu makanan murah bergizi, pola asuh, kebersihan). 
 
     OUTPUT JSON MURNI:
     {
