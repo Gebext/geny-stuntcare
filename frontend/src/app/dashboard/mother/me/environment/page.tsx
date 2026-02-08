@@ -179,7 +179,7 @@ export default function MotherEnvironmentPage() {
                   <input
                     {...register("distanceFaskesKm")}
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     className={cn(
                       "w-full bg-slate-50 border-2 rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 transition-all outline-none",
                       errors.distanceFaskesKm

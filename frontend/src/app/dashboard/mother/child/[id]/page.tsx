@@ -486,7 +486,7 @@ const AnthropometryFields = ({ register }: any) => (
       name="heightCm"
       register={register}
       type="number"
-      step="0.1"
+      step="0.01"
       icon={<Ruler className="w-4 h-4" />}
     />
     <InputField

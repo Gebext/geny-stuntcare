@@ -4,6 +4,8 @@
 backend/node_modules
 frontend/.next
 frontend/node_modules
+load-test.js
+ai-load-test.js
 
 # OS
 .DS_Store

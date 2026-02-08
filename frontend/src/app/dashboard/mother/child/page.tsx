@@ -229,7 +229,7 @@ export default function MotherChildrenPage() {
                     <input
                       {...register("birthWeight")}
                       type="number"
-                      step="0.1"
+                      step="0.01"
                       className={cn(
                         "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 outline-none transition-all",
                         errors.birthWeight
@@ -256,7 +256,7 @@ export default function MotherChildrenPage() {
                     <input
                       {...register("birthLength")}
                       type="number"
-                      step="0.1"
+                      step="0.01"
                       className={cn(
                         "w-full bg-slate-50 border-2 rounded-[18px] md:rounded-[22px] px-4 md:px-6 py-3 md:py-4.5 text-xs md:text-sm font-bold text-slate-700 outline-none transition-all",
                         errors.birthLength
