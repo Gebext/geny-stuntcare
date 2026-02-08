@@ -156,10 +156,61 @@ export class AiService implements OnModuleInit {
     }
   }
 
-  private calculateZScore(w: number, g: string, a: number) {
-    // Referensi kasar Median WHO BB/U untuk 0-24 bulan
-    const median = g === 'MALE' ? 9.6 : 8.9;
-    return (w - median) / 1.1;
+  private calculateZScore(w: number, g: string, age: number) {
+    // Data WHO Weight-for-Age (WFA) Simplified [Age(Mo), Median(Kg), SD]
+    // Sumber: WHO Child Growth Standards
+    const points =
+      g === 'MALE'
+        ? [
+            [0, 3.3, 0.4],
+            [3, 6.4, 0.7],
+            [6, 7.9, 0.8],
+            [9, 8.9, 0.9],
+            [12, 9.6, 1.0],
+            [18, 10.9, 1.2],
+            [24, 12.2, 1.3],
+            [36, 14.3, 1.6],
+            [48, 16.3, 1.9],
+            [60, 18.3, 2.2],
+          ]
+        : [
+            [0, 3.2, 0.4],
+            [3, 5.8, 0.7],
+            [6, 7.3, 0.8],
+            [9, 8.2, 0.9],
+            [12, 8.9, 1.0],
+            [18, 10.2, 1.2],
+            [24, 11.5, 1.3],
+            [36, 13.9, 1.6],
+            [48, 16.1, 1.9],
+            [60, 18.2, 2.2],
+          ];
+
+    // Temukan rentang usia untuk interpolasi
+    let lower = points[0];
+    let upper = points[points.length - 1];
+
+    for (let i = 0; i < points.length - 1; i++) {
+      if (age >= points[i][0] && age <= points[i + 1][0]) {
+        lower = points[i];
+        upper = points[i + 1];
+        break;
+      }
+    }
+
+    const [a1, m1, sd1] = lower;
+    const [a2, m2, sd2] = upper;
+
+    let median = m1;
+    let sd = sd1;
+
+    if (a2 !== a1) {
+      const factor = (age - a1) / (a2 - a1);
+      median = m1 + factor * (m2 - m1);
+      sd = sd1 + factor * (sd2 - sd1);
+    }
+
+    return (w - median) / sd;
   }
 
   private calculateAge(birth: Date) {
