@@ -59,19 +59,12 @@ export default function MotherChildrenPage() {
   });
 
   const birthDateValue = watch("birthDate");
-  const ageMonths = birthDateValue
-    ? Math.floor(
-        (Date.now() - new Date(birthDateValue).getTime()) /
-          (1000 * 60 * 60 * 24 * 30.436875),
-      )
-    : 0;
-  const isAsiAllowed = !birthDateValue || ageMonths <= 6;
 
   const handleOnSubmit = (values: ChildFormValues) => {
     const payload = {
       ...values,
       birthDate: new Date(values.birthDate).toISOString(),
-      asiExclusive: isAsiAllowed ? values.asiExclusive : false,
+      asiExclusive: values.asiExclusive,
     };
 
     addChildMutation.mutate(payload, {
@@ -170,7 +163,7 @@ export default function MotherChildrenPage() {
                     <Heart
                       className={cn(
                         "w-4 h-4 md:w-5 md:h-5 transition-all",
-                        watch("asiExclusive") && isAsiAllowed
+                        watch("asiExclusive")
                           ? "text-rose-500 fill-rose-500 scale-110"
                           : "text-slate-300",
                       )}
@@ -178,21 +171,12 @@ export default function MotherChildrenPage() {
                     <input
                       type="checkbox"
                       {...register("asiExclusive")}
-                      disabled={!isAsiAllowed}
-                      className={cn(
+                       className={cn(
                         "w-9 md:w-11 h-5 md:h-6 bg-slate-300 rounded-full appearance-none checked:bg-[#3AC4B6] transition-all relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:w-3 md:after:w-4 after:h-3 md:after:h-4 after:rounded-full after:transition-all checked:after:left-5 md:checked:after:left-6 shadow-inner",
-                        !isAsiAllowed
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer",
+                        "cursor-pointer",
                       )}
                     />
                   </div>
-                  {!isAsiAllowed && birthDateValue && (
-                    <p className="text-[8px] md:text-[10px] text-slate-400 font-semibold mt-1">
-                      ASI eksklusif hanya sampai 6 bulan — usia anak:{" "}
-                      {ageMonths} bulan. Tidak dapat dipilih.
-                    </p>
-                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
