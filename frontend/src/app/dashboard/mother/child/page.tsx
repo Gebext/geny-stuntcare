@@ -84,7 +84,7 @@ export default function MotherChildrenPage() {
           </div>
           <div>
             <h1 className="text-lg md:text-2xl font-bold tracking-tight uppercase">
-              Daftar Anak
+              Daftar Buah Hati  
             </h1>
             <p className="text-teal-50/80 text-[10px] md:text-sm font-medium mt-0.5">
               Registrasi dan pantau tumbuh kembang si kecil.
