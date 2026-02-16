@@ -1,37 +1,110 @@
-# Dockerized-Nestjs-Postgresql-Prisma-Nextjs-setup
+# 🩺 GENY-StuntCare: AI-Driven Maternal & Child Health Intelligence
 
-Hi, here is a dockerized bare-bones fullstack TS setup I have done for one of my projects at 42 Paris, with:
-- NestJS + PostgreSQL + Prisma,
-- NextJS,
+GENY-StuntCare is a comprehensive, AI-powered healthcare platform designed to monitor and improve maternal and child health, with a primary focus on preventing stunting through data-driven insights and AI diagnostics.
 
-separated in three services, linked to each other by a single network. It performs smoothly.
+## 🌟 Key Features
 
-Here I resolved a few commonly met issues, such as:
-- how to set the project to have its dependencies -- typically node_modules -- build or rebuild and run as images only,
-- which is a piece of cake for Nest, but requires more efforts to achieve with Next, as mentionned in a few posts about this topic out there -- with no definitive answers.
+-   **🤖 AI Medical Diagnosis:** Integrated with Gemini AI and Groq for pregnancy analysis and child health assessment.
+-   **📈 Growth Tracking:** Accurate Z-score calculations for child height/weight using WHO standards.
+-   **💉 Vaccination Monitoring:** Comprehensive tracking of child immunizations.
+-   **🤰 Pregnancy Health:** Tools for mothers to monitor their pregnancy progress and receive AI-driven advice.
+-   **👥 Role-Based Access:** Specialized interfaces for Healthcare Workers (Nakes), Community Volunteers (Kader), and Mothers.
+-   **📊 Real-time Analytics:** Interactive charts for health trends using Recharts.
 
-In some cases, Next is not able to rebuild completely: it doesn't find its rebuilt image, because it didn't create the path to it... so you need priorly to create the path yourself in the Dockerfile.
+---
 
+## 🛠 Tech Stack
 
+### Frontend
+-   **Framework:** Next.js 15 (App Router)
+-   **Styling:** TailwindCSS + Framer Motion
+-   **State Management:** Zustand
+-   **Data Fetching:** TanStack Query (React Query)
+-   **UI Components:** Radix UI + Lucide Icons
 
-# Running the setup:
+### Backend
+-   **Framework:** NestJS
+-   **Database:** PostgreSQL with Prisma ORM
+-   **AI Integration:** Google Generative AI (Gemini) & Groq SDK
+-   **Auth:** JWT with Passport.js
+-   **Monitoring:** Prometheus & Grafana integrations
 
-1. create the .env, in backend directory (pls change credentials):
+---
+
+## 📂 Project Structure
+
+```text
+.
+├── frontend/          # Next.js Application
+├── backend/           # NestJS API Service
+├── docs-site/         # Docusaurus Documentation (Port 3001)
+├── docker-compose.yml # Container orchestration
+└── ...
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+-   Docker and Docker Compose
+-   Node.js (for local development)
+
+### 1. Setup Environment
+Create a `.env` file in the `backend/` directory:
+```env
 POSTGRES_HOST=db
-POSTGRES_USER=transc
-POSTGRES_PASSWORD=endence
-POSTGRES_DB=mydatabase
+POSTGRES_USER=transcendence
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=stuntcare
 DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+GEMINI_API_KEY=your_gemini_key
+GROQ_API_KEY=your_groq_key
+```
 
-2. then run:
+### 2. Run with Docker
+```bash
 docker-compose up --build
+```
 
+### 3. Local Development
+If you prefer running without Docker:
 
+**Terminal 1: Backend**
+```bash
+cd backend
+npm install
+npm run start:dev
+```
 
-# To stop + cleanup containers/images:
+**Terminal 2: Frontend**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-- after you have stopped the project w/ Ctrl + c, run:
+**Terminal 3: Documentation**
+```bash
+cd docs-site
+npm install
+npm run start
+```
+
+---
+
+## 📖 Documentation
+Detailed technical documentation and user guides are available in the `docs-site` directory or can be accessed locally at `http://localhost:3001` when running the documentation service.
+
+---
+
+## 🧹 Cleanup
+To stop and remove containers:
+```bash
 docker-compose down --rmi all
+```
+To deep clean Docker system:
+```bash
+./cleanup.sh
+```
 
-- in order to delete all images + containers in 1 bash command:
-docker system prune -af; docker volume prune -f
