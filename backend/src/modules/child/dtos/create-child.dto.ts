@@ -30,8 +30,52 @@ export class CreateChildDto {
   @IsNumber()
   birthLength: number;
 
+  @IsNumber()
+  @IsOptional()
+  birthHeadCircumference?: number;
+
+  @IsNumber()
+  @IsOptional()
+  birthArmCircumference?: number;
+
   @IsBoolean()
   asiExclusive: boolean;
+}
+
+export class UpdateChildDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsEnum(['L', 'P'], {
+    message: 'Gender must be L (Laki-laki) or P (Perempuan)',
+  })
+  @IsOptional()
+  gender?: string;
+
+  @IsDateString()
+  @IsOptional()
+  birthDate?: string;
+
+  @IsNumber()
+  @IsOptional()
+  birthWeight?: number;
+
+  @IsNumber()
+  @IsOptional()
+  birthLength?: number;
+
+  @IsNumber()
+  @IsOptional()
+  birthHeadCircumference?: number;
+
+  @IsNumber()
+  @IsOptional()
+  birthArmCircumference?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  asiExclusive?: boolean;
 }
 
 export class ChildFilterDto {

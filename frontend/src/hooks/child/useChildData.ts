@@ -84,3 +84,63 @@ export const useAddActivity = (childId: string, type: ActivityType) => {
     },
   });
 };
+
+export const useEditActivity = (childId: string, type: ActivityType) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      recordId,
+      formData,
+    }: {
+      recordId: string;
+      formData: any;
+    }) => {
+      const endpoint = getBaseEndpoint(type);
+      const payload: any = { ...formData };
+
+      // Transformasi data agar sesuai tipe data Backend (NestJS)
+      if (type === "anthropometry") {
+        if (payload.weightKg) payload.weightKg = parseFloat(payload.weightKg);
+        if (payload.heightCm) payload.heightCm = parseFloat(payload.heightCm);
+        if (payload.measurementDate)
+          payload.measurementDate = new Date(
+            payload.measurementDate,
+          ).toISOString();
+      }
+
+      if (type === "immunization") {
+        if (payload.dateGiven)
+          payload.dateGiven = new Date(payload.dateGiven).toISOString();
+      }
+
+      if (type === "nutrition") {
+        if (payload.frequencyPerDay)
+          payload.frequencyPerDay = parseInt(payload.frequencyPerDay, 10);
+        if (payload.recordedAt)
+          payload.recordedAt = new Date(payload.recordedAt).toISOString();
+      }
+
+      if (type === "health") {
+        if (payload.isChronic !== undefined)
+          payload.isChronic = !!payload.isChronic;
+        if (payload.diagnosisDate)
+          payload.diagnosisDate = new Date(
+            payload.diagnosisDate,
+          ).toISOString();
+      }
+
+      // remove childId from payload if present
+      delete payload.childId;
+
+      const { data } = await api.patch(`${endpoint}/${recordId}`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["child-history", childId, type],
+      });
+      queryClient.invalidateQueries({ queryKey: ["mother-profile"] });
+    },
+  });
+};

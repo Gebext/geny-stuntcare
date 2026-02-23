@@ -132,3 +132,48 @@ export const useAddChild = () => {
     },
   });
 };
+
+// 5. Hook Edit Anak
+export const useEditChild = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (payload: any) => {
+      const { childId, ...data } = payload;
+      const res = await api.patch(`/children/${childId}`, data);
+      return res.data;
+    },
+    onSuccess: (res) => {
+      toast({
+        title: "Berhasil Diperbarui!",
+        description: `Data ${res.data?.name || "anak"} telah diperbarui.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["mother-profile-me"] });
+    },
+    onError: (error: any) => {
+      const status = error.response?.status;
+      const message = error.response?.data?.message;
+
+      if (status === 403) {
+        toast({
+          title: "Tidak Dapat Diubah",
+          description: "Data sudah diverifikasi Kader dan tidak dapat diubah.",
+          variant: "destructive",
+        });
+      } else if (status === 404) {
+        toast({
+          title: "Data Tidak Ditemukan",
+          description: "Data anak tidak ditemukan.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Gagal Memperbarui",
+          description: message || "Terjadi kesalahan server.",
+          variant: "destructive",
+        });
+      }
+    },
+  });
+};

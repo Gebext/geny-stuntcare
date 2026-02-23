@@ -32,6 +32,20 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateAnthropometryDto.prototype, "heightCm", void 0);
 __decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.Min)(20),
+    (0, class_validator_1.Max)(60),
+    __metadata("design:type", Number)
+], CreateAnthropometryDto.prototype, "headCircumferenceCm", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.Min)(5),
+    (0, class_validator_1.Max)(40),
+    __metadata("design:type", Number)
+], CreateAnthropometryDto.prototype, "armCircumferenceCm", void 0);
+__decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)

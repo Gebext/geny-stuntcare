@@ -63,17 +63,20 @@ model MotherProfile {
   childProfiles    ChildProfile[]
   environment      EnvironmentData?
   kaderAssignments KaderAssignment[] @relation("MotherToAssignment")
+  motherAiAnalysis MotherAiAnalysis?
 }
 
 model ChildProfile {
-  id           String   @id @default(uuid())
-  motherId     String
-  name         String
-  gender       String
-  birthDate    DateTime
-  birthWeight  Float
-  birthLength  Float
-  asiExclusive Boolean
+  id                      String   @id @default(uuid())
+  motherId                String
+  name                    String
+  gender                  String
+  birthDate               DateTime
+  birthWeight             Float
+  birthLength             Float
+  birthHeadCircumference  Float?   // Lingkar kepala saat lahir (cm)
+  birthArmCircumference   Float?   // Lingkar lengan saat lahir (cm)
+  asiExclusive            Boolean
 
   // Field Tambahan untuk Verifikasi & AI
   isVerified   Boolean @default(false)
@@ -98,15 +101,17 @@ model ChildProfile {
 // Anthropometry
 // =======================
 model Anthropometry {
-  id              String   @id @default(uuid())
-  childId         String
-  weightKg        Float
-  heightCm        Float
-  ageMonth        Int
-  measuredBy      String
-  measurementDate DateTime
-  verified        Boolean
-  createdAt       DateTime @default(now())
+  id                  String   @id @default(uuid())
+  childId             String
+  weightKg            Float
+  heightCm            Float
+  headCircumferenceCm Float?   // Lingkar kepala (cm)
+  armCircumferenceCm  Float?   // Lingkar lengan atas (cm)
+  ageMonth            Int
+  measuredBy          String
+  measurementDate     DateTime
+  verified            Boolean
+  createdAt           DateTime @default(now())
 
   child ChildProfile @relation(fields: [childId], references: [id])
 }
@@ -251,4 +256,29 @@ model AiAnalysis {
   updatedAt         DateTime @updatedAt
 
   child             ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+// =======================
+// Mother AI Analysis
+// =======================
+model MotherAiAnalysis {
+  id                String   @id @default(uuid())
+  motherId          String   @unique
+  score             Int      // Skor total 0-100
+  status            String   // e.g., "Risiko Rendah", "Risiko Tinggi"
+  summary           String   @db.Text
+
+  // Breakdown skor per aspek kesehatan ibu
+  bmiScore          Int
+  lilaScore         Int
+  nutritionScore    Int
+  ttdScore          Int
+  pregnancyScore    Int
+
+  recommendations   Json
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  mother            MotherProfile @relation(fields: [motherId], references: [id], onDelete: Cascade)
 }

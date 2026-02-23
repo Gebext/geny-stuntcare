@@ -3,7 +3,7 @@
 import { useMotherStore } from "@/store/useMotherStore";
 import { useParams, useRouter } from "next/navigation";
 import { RoleGuard } from "@/components/auth/RoleGuard";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -25,6 +25,8 @@ import {
   AlertCircle,
   Clock,
   Zap,
+  Pencil,
+  X,
 } from "lucide-react";
 import {
   AreaChart,
@@ -40,8 +42,10 @@ import Link from "next/link";
 import {
   useChildHistory,
   useAddActivity,
+  useEditActivity,
   ActivityType,
 } from "@/hooks/child/useChildData";
+import BMIMeter from "@/components/child/BMIMeter";
 
 const tabs: { id: ActivityType; label: string; icon: any }[] = [
   { id: "anthropometry", label: "Antropometri", icon: LineChart },
@@ -57,6 +61,7 @@ export default function ChildDetailPage() {
   const { childProfiles } = useMotherStore();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<ActivityType>("anthropometry");
+  const [editingItem, setEditingItem] = useState<any>(null);
 
   const {
     data: historyData,
@@ -64,9 +69,72 @@ export default function ChildDetailPage() {
     refetch,
   } = useChildHistory(childId, activeTab);
   const mutation = useAddActivity(childId, activeTab);
+  const editMutation = useEditActivity(childId, activeTab);
   const child = childProfiles?.find((c: any) => c.id === childId);
 
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
+
+  // Edit form state
+  const {
+    register: editRegister,
+    handleSubmit: handleEditSubmit,
+    reset: editReset,
+    setValue: setEditValue,
+  } = useForm();
+
+  // Populate edit form when editing item changes
+  useEffect(() => {
+    if (editingItem) {
+      if (activeTab === "anthropometry") {
+        setEditValue("weightKg", editingItem.weightKg || editingItem.weight);
+        setEditValue(
+          "heightCm",
+          editingItem.heightCm || editingItem.height,
+        );
+        setEditValue(
+          "headCircumferenceCm",
+          editingItem.headCircumferenceCm || "",
+        );
+        setEditValue(
+          "armCircumferenceCm",
+          editingItem.armCircumferenceCm || "",
+        );
+        setEditValue(
+          "measurementDate",
+          editingItem.measurementDate
+            ? new Date(editingItem.measurementDate).toISOString().split("T")[0]
+            : "",
+        );
+      } else if (activeTab === "immunization") {
+        setEditValue("vaccineName", editingItem.vaccineName);
+        setEditValue(
+          "dateGiven",
+          editingItem.dateGiven
+            ? new Date(editingItem.dateGiven).toISOString().split("T")[0]
+            : "",
+        );
+      } else if (activeTab === "nutrition") {
+        setEditValue("foodType", editingItem.foodType);
+        setEditValue("frequencyPerDay", editingItem.frequencyPerDay);
+        setEditValue("proteinSource", editingItem.proteinSource);
+        setEditValue(
+          "recordedAt",
+          editingItem.recordedAt
+            ? new Date(editingItem.recordedAt).toISOString().split("T")[0]
+            : "",
+        );
+      } else if (activeTab === "health") {
+        setEditValue("diseaseName", editingItem.diseaseName);
+        setEditValue(
+          "diagnosisDate",
+          editingItem.diagnosisDate
+            ? new Date(editingItem.diagnosisDate).toISOString().split("T")[0]
+            : "",
+        );
+        setEditValue("isChronic", editingItem.isChronic);
+      }
+    }
+  }, [editingItem, activeTab, setEditValue]);
 
   // --- LOGIC: DATA TERAKHIR vs DATA LAHIR ---
   const anthroStats = useMemo(() => {
@@ -125,6 +193,18 @@ export default function ChildDetailPage() {
 
   const onSave = (values: any) => {
     const payload = { ...values };
+    if (activeTab === "anthropometry") {
+      if (payload.headCircumferenceCm) {
+        payload.headCircumferenceCm = parseFloat(payload.headCircumferenceCm);
+      } else {
+        delete payload.headCircumferenceCm;
+      }
+      if (payload.armCircumferenceCm) {
+        payload.armCircumferenceCm = parseFloat(payload.armCircumferenceCm);
+      } else {
+        delete payload.armCircumferenceCm;
+      }
+    }
     if (activeTab === "nutrition") {
       payload.frequencyPerDay = Number(payload.frequencyPerDay);
       payload.recordedAt = payload.recordedAt
@@ -144,6 +224,51 @@ export default function ChildDetailPage() {
         });
       },
     });
+  };
+
+  const onEditSave = (values: any) => {
+    if (!editingItem) return;
+
+    const payload = { ...values };
+    if (activeTab === "anthropometry") {
+      if (payload.headCircumferenceCm) {
+        payload.headCircumferenceCm = parseFloat(payload.headCircumferenceCm);
+      } else {
+        delete payload.headCircumferenceCm;
+      }
+      if (payload.armCircumferenceCm) {
+        payload.armCircumferenceCm = parseFloat(payload.armCircumferenceCm);
+      } else {
+        delete payload.armCircumferenceCm;
+      }
+    }
+    if (activeTab === "nutrition") {
+      payload.frequencyPerDay = Number(payload.frequencyPerDay);
+      if (payload.recordedAt) {
+        payload.recordedAt = new Date(payload.recordedAt).toISOString();
+      }
+    }
+
+    editMutation.mutate(
+      { recordId: editingItem.id, formData: payload },
+      {
+        onSuccess: () => {
+          setEditingItem(null);
+          editReset();
+          toast({
+            title: "Berhasil! ✨",
+            description: "Data berhasil diperbarui.",
+          });
+        },
+        onError: (err: any) => {
+          toast({
+            title: "Gagal",
+            description: err?.response?.data?.message || "Error",
+            variant: "destructive",
+          });
+        },
+      },
+    );
   };
 
   if (!child) return <ProfileNotFound />;
@@ -240,7 +365,33 @@ export default function ChildDetailPage() {
                     icon={<Ruler className="w-3 h-3" />}
                   />
                 </div>
+                {(child.birthHeadCircumference || child.birthArmCircumference) && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {child.birthHeadCircumference && (
+                      <StatCard
+                        label="LK Lahir"
+                        value={child.birthHeadCircumference}
+                        unit="cm"
+                        icon={<Baby className="w-3 h-3" />}
+                      />
+                    )}
+                    {child.birthArmCircumference && (
+                      <StatCard
+                        label="LILA Lahir"
+                        value={child.birthArmCircumference}
+                        unit="cm"
+                        icon={<Baby className="w-3 h-3" />}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
+
+              {/* BMI METER */}
+              <BMIMeter
+                weightKg={anthroStats.latestWeight || child.birthWeight}
+                heightCm={anthroStats.latestHeight || child.birthLength}
+              />
             </div>
 
             <div className="flex-1 min-h-[250px] relative bg-slate-50/30 rounded-[30px] p-4 border border-slate-50">
@@ -266,6 +417,7 @@ export default function ChildDetailPage() {
                 onClick={() => {
                   setActiveTab(tab.id);
                   reset();
+                  setEditingItem(null);
                 }}
                 className={cn(
                   "flex items-center justify-center gap-3 py-4 px-6 rounded-2xl transition-all shrink-0 flex-1 min-w-[140px]",
@@ -336,7 +488,12 @@ export default function ChildDetailPage() {
                 </div>
               ) : items.length > 0 ? (
                 items.map((item: any) => (
-                  <HistoryCard key={item.id} item={item} type={activeTab} />
+                  <HistoryCard
+                    key={item.id}
+                    item={item}
+                    type={activeTab}
+                    onEdit={() => setEditingItem(item)}
+                  />
                 ))
               ) : (
                 <div className="py-20 text-center opacity-20 flex flex-col items-center">
@@ -347,6 +504,64 @@ export default function ChildDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* EDIT MODAL */}
+        {editingItem && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              onClick={() => {
+                setEditingItem(null);
+                editReset();
+              }}
+            />
+            <div className="relative bg-white w-full max-w-lg rounded-[35px] p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-black text-slate-700 text-[11px] uppercase tracking-widest flex items-center gap-2">
+                  <Pencil className="w-4 h-4 text-amber-500" /> Edit{" "}
+                  {tabs.find((t) => t.id === activeTab)?.label}
+                </h3>
+                <button
+                  onClick={() => {
+                    setEditingItem(null);
+                    editReset();
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <form
+                onSubmit={handleEditSubmit(onEditSave)}
+                className="space-y-4"
+              >
+                {activeTab === "anthropometry" && (
+                  <AnthropometryFields register={editRegister} />
+                )}
+                {activeTab === "immunization" && (
+                  <ImmunizationFields register={editRegister} />
+                )}
+                {activeTab === "nutrition" && (
+                  <NutritionFields register={editRegister} />
+                )}
+                {activeTab === "health" && (
+                  <HealthFields register={editRegister} />
+                )}
+                <button
+                  disabled={editMutation.isPending}
+                  className="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-white py-5 rounded-2xl font-black text-[11px] tracking-widest shadow-lg flex items-center justify-center gap-3 disabled:opacity-50 transition-colors"
+                >
+                  {editMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}{" "}
+                  PERBARUI DATA
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </RoleGuard>
   );
@@ -393,12 +608,15 @@ function Badge({ label, icon, className }: any) {
   );
 }
 
-function HistoryCard({ item, type }: any) {
+function HistoryCard({ item, type, onEdit }: any) {
   let title = "-";
   let sub = "-";
   let icon = <CheckCircle2 className="w-4 h-4 text-[#3AC4B6]" />;
   if (type === "anthropometry") {
-    title = `${item.weightKg ?? item.weight}kg • ${item.heightCm ?? item.height}cm`;
+    const parts = [`${item.weightKg ?? item.weight}kg`, `${item.heightCm ?? item.height}cm`];
+    if (item.headCircumferenceCm) parts.push(`LK ${item.headCircumferenceCm}cm`);
+    if (item.armCircumferenceCm) parts.push(`LILA ${item.armCircumferenceCm}cm`);
+    title = parts.join(" • ");
     sub = `Bulan ke-${item.ageMonth || 0}`;
     icon = <Scale className="w-4 h-4 text-[#3AC4B6]" />;
   } else if (type === "nutrition") {
@@ -438,19 +656,31 @@ function HistoryCard({ item, type }: any) {
           <p className="text-[9px] text-slate-400 font-bold uppercase">{sub}</p>
         </div>
       </div>
-      <p className="text-[9px] font-black text-slate-300 uppercase">
-        {date
-          ? new Date(date).toLocaleDateString("id-ID", {
-              day: "2-digit",
-              month: "short",
-            })
-          : "-"}
-      </p>
+      <div className="flex items-center gap-3">
+        <p className="text-[9px] font-black text-slate-300 uppercase">
+          {date
+            ? new Date(date).toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "short",
+              })
+            : "-"}
+        </p>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit?.();
+          }}
+          className="w-7 h-7 flex items-center justify-center rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-100 opacity-0 group-hover:opacity-100 transition-all"
+          title="Edit Data"
+        >
+          <Pencil className="w-3 h-3" />
+        </button>
+      </div>
     </div>
   );
 }
 
-function InputField({ label, name, register, icon, ...props }: any) {
+function InputField({ label, name, register, icon, required = true, ...props }: any) {
   return (
     <div className="space-y-1.5">
       <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
@@ -458,7 +688,7 @@ function InputField({ label, name, register, icon, ...props }: any) {
       </label>
       <div className="relative">
         <input
-          {...register(name, { required: true })}
+          {...register(name, { required })}
           {...props}
           className="w-full bg-slate-50 border-2 border-transparent focus:border-teal-100 focus:bg-white rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none transition-all"
         />
@@ -488,6 +718,26 @@ const AnthropometryFields = ({ register }: any) => (
       type="number"
       step="0.01"
       icon={<Ruler className="w-4 h-4" />}
+    />
+    <InputField
+      label="L. Kepala (cm)"
+      name="headCircumferenceCm"
+      register={register}
+      type="number"
+      step="0.01"
+      required={false}
+      placeholder="Opsional"
+      icon={<Baby className="w-4 h-4" />}
+    />
+    <InputField
+      label="L. Lengan (cm)"
+      name="armCircumferenceCm"
+      register={register}
+      type="number"
+      step="0.01"
+      required={false}
+      placeholder="Opsional"
+      icon={<Baby className="w-4 h-4" />}
     />
     <InputField
       label="Tanggal"

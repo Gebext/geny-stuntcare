@@ -35,4 +35,34 @@ export declare class AiController {
         createdAt: Date;
         updatedAt: Date;
     }>;
+    getMotherAnalysis(motherId: string): Promise<{
+        id: string;
+        motherId: string;
+        score: number;
+        status: string;
+        summary: string;
+        bmiScore: number;
+        lilaScore: number;
+        nutritionScore: number;
+        ttdScore: number;
+        pregnancyScore: number;
+        recommendations: import(".prisma/client").Prisma.JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    triggerMotherAnalysis(motherId: string): Promise<{
+        id: string;
+        motherId: string;
+        score: number;
+        status: string;
+        summary: string;
+        bmiScore: number;
+        lilaScore: number;
+        nutritionScore: number;
+        ttdScore: number;
+        pregnancyScore: number;
+        recommendations: import(".prisma/client").Prisma.JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
 }

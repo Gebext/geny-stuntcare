@@ -77,7 +77,7 @@ __decorate([
     __param(1, (0, common_1.Param)('id')),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:paramtypes", [Object, String, create_child_dto_1.UpdateChildDto]),
     __metadata("design:returntype", Promise)
 ], ChildController.prototype, "update", null);
 __decorate([

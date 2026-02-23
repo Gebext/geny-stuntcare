@@ -25,6 +25,8 @@ export declare class MotherService {
             birthDate: Date;
             birthWeight: number;
             birthLength: number;
+            birthHeadCircumference: number;
+            birthArmCircumference: number;
             asiExclusive: boolean;
             isVerified: boolean;
             stuntingRisk: string;

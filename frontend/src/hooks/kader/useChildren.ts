@@ -245,3 +245,144 @@ export const useAddAnthropometry = (childId: string) => {
     },
   });
 };
+
+export const useEditAnthropometry = (childId: string) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      recordId,
+      payload,
+    }: {
+      recordId: string;
+      payload: any;
+    }) => {
+      const response = await api.patch(`/anthropometry/${recordId}`, payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["child-detail", childId] });
+      toast({
+        title: "Berhasil",
+        description: "Data antropometri telah diperbarui",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Gagal",
+        description: error?.response?.data?.message || "Gagal mengubah data",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useEditImmunization = (childId: string) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      recordId,
+      payload,
+    }: {
+      recordId: string;
+      payload: any;
+    }) => {
+      const response = await api.patch(`/immunization/${recordId}`, payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["child-detail", childId] });
+      queryClient.invalidateQueries({
+        queryKey: ["child-immunization", childId],
+      });
+      toast({
+        title: "Berhasil",
+        description: "Data imunisasi telah diperbarui",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Gagal",
+        description: error?.response?.data?.message || "Gagal mengubah data",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useEditNutrition = (childId: string) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      recordId,
+      payload,
+    }: {
+      recordId: string;
+      payload: any;
+    }) => {
+      const response = await api.patch(`/nutrition/${recordId}`, payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["child-detail", childId] });
+      queryClient.invalidateQueries({
+        queryKey: ["child-nutrition", childId],
+      });
+      toast({
+        title: "Berhasil",
+        description: "Data nutrisi telah diperbarui",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Gagal",
+        description: error?.response?.data?.message || "Gagal mengubah data",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useEditHealth = (childId: string) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      recordId,
+      payload,
+    }: {
+      recordId: string;
+      payload: any;
+    }) => {
+      const response = await api.patch(
+        `/health-history/${recordId}`,
+        payload,
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["child-detail", childId] });
+      queryClient.invalidateQueries({
+        queryKey: ["child-health-history", childId],
+      });
+      toast({
+        title: "Berhasil",
+        description: "Riwayat kesehatan telah diperbarui",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Gagal",
+        description: error?.response?.data?.message || "Gagal mengubah data",
+        variant: "destructive",
+      });
+    },
+  });
+};
+

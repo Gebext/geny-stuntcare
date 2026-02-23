@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsString,
   IsUUID,
+  IsOptional,
   Min,
   Max,
 } from 'class-validator';
@@ -21,6 +22,18 @@ export class CreateAnthropometryDto {
   @Min(30)
   @Max(150)
   heightCm: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(20)
+  @Max(60)
+  headCircumferenceCm?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(5)
+  @Max(40)
+  armCircumferenceCm?: number;
 
   @IsString()
   @IsNotEmpty()

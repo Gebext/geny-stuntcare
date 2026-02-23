@@ -8,6 +8,8 @@ interface ChildProfile {
   birthDate: string;
   birthWeight: number;
   birthLength: number;
+  birthHeadCircumference?: number;
+  birthArmCircumference?: number;
   asiExclusive: boolean;
   createdAt: string;
 }

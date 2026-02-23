@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prismaservice';
 import { CreateImmunizationDto } from '../dtos/crate-immunization.dto';
+import { UpdateImmunizationDto } from '../dtos/update-immunization.dto';
 
 @Injectable()
 export class ImmunizationService {
@@ -13,6 +14,53 @@ export class ImmunizationService {
   private readonly logger = new Logger(ImmunizationService.name);
 
   constructor(private prisma: PrismaService) {}
+
+  async updateRecord(userId: string, recordId: string, dto: UpdateImmunizationDto) {
+    this.logger.log(
+      `[UPDATE] Request update imunisasi ID: ${recordId}`,
+    );
+
+    const existing = await this.prisma.immunization.findUnique({
+      where: { id: recordId },
+      include: { child: { include: { mother: true } } },
+    });
+
+    if (!existing) {
+      this.logger.warn(`[NOT FOUND] Immunization ID ${recordId} tidak ditemukan`);
+      throw new NotFoundException('Data imunisasi tidak ditemukan');
+    }
+
+    // Validasi akses
+    const user: any = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: { include: { role: true } } },
+    });
+
+    const isKader = user?.roles.some((r: any) => r.role.name === 'KADER');
+    const isOwner = existing.child.mother.userId === userId;
+
+    if (!isKader && !isOwner) {
+      this.logger.error(`[FORBIDDEN] User ${userId} tidak punya akses update imunisasi ini`);
+      throw new ForbiddenException('Anda tidak memiliki akses untuk mengubah data ini.');
+    }
+
+    const updateData: any = {};
+    if (dto.vaccineName !== undefined) updateData.vaccineName = dto.vaccineName;
+    if (dto.status !== undefined) updateData.status = dto.status;
+    if (dto.dateGiven) updateData.dateGiven = new Date(dto.dateGiven);
+
+    try {
+      const result = await this.prisma.immunization.update({
+        where: { id: recordId },
+        data: updateData,
+      });
+      this.logger.log(`[SUCCESS] Immunization ID ${recordId} berhasil diupdate`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[DB ERROR] Gagal update imunisasi: ${error.message}`);
+      throw error;
+    }
+  }
 
   async addRecord(userId: string, dto: CreateImmunizationDto) {
     this.logger.log(

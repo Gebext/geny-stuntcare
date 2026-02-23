@@ -14,7 +14,11 @@ import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorators';
 import { ResponseWrapperInterceptor } from 'src/common/interceptors/response-wrapper.interceptor';
-import { ChildFilterDto, CreateChildDto } from '../dtos/create-child.dto';
+import {
+  ChildFilterDto,
+  CreateChildDto,
+  UpdateChildDto,
+} from '../dtos/create-child.dto';
 import { ChildService } from '../services/child-service';
 
 @UseInterceptors(ResponseWrapperInterceptor)
@@ -45,7 +49,11 @@ export class ChildController {
 
   @Patch(':id')
   @Roles('MOTHER')
-  async update(@Request() req, @Param('id') id: string, @Body() dto: any) {
+  async update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateChildDto,
+  ) {
     return this.childService.updateChild(req.user.id, id, dto);
   }
 

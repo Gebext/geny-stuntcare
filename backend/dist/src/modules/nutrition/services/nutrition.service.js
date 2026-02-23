@@ -18,6 +18,48 @@ let NutritionService = NutritionService_1 = class NutritionService {
         this.prisma = prisma;
         this.logger = new common_1.Logger(NutritionService_1.name);
     }
+    async updateRecord(userId, recordId, dto) {
+        this.logger.log(`[UPDATE] Request update nutrisi ID: ${recordId}`);
+        const existing = await this.prisma.nutritionHistory.findUnique({
+            where: { id: recordId },
+            include: { child: { include: { mother: true } } },
+        });
+        if (!existing) {
+            this.logger.warn(`[NOT FOUND] NutritionHistory ID ${recordId} tidak ditemukan`);
+            throw new common_1.NotFoundException('Data nutrisi tidak ditemukan');
+        }
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { roles: { include: { role: true } } },
+        });
+        const isKader = user?.roles.some((r) => r.role.name === 'KADER');
+        const isOwner = existing.child.mother.userId === userId;
+        if (!isKader && !isOwner) {
+            this.logger.error(`[FORBIDDEN] User ${userId} tidak punya akses update nutrisi ini`);
+            throw new common_1.ForbiddenException('Anda tidak memiliki akses untuk mengubah data ini.');
+        }
+        const updateData = {};
+        if (dto.foodType !== undefined)
+            updateData.foodType = dto.foodType;
+        if (dto.frequencyPerDay !== undefined)
+            updateData.frequencyPerDay = dto.frequencyPerDay;
+        if (dto.proteinSource !== undefined)
+            updateData.proteinSource = dto.proteinSource;
+        if (dto.recordedAt)
+            updateData.recordedAt = new Date(dto.recordedAt);
+        try {
+            const result = await this.prisma.nutritionHistory.update({
+                where: { id: recordId },
+                data: updateData,
+            });
+            this.logger.log(`[SUCCESS] NutritionHistory ID ${recordId} berhasil diupdate`);
+            return result;
+        }
+        catch (error) {
+            this.logger.error(`[DB ERROR] Gagal update nutrisi: ${error.message}`);
+            throw error;
+        }
+    }
     async addRecord(userId, dto) {
         this.logger.log(`[CREATE] Mencatat riwayat nutrisi untuk Child ID: ${dto.childId}`);
         const child = await this.prisma.childProfile.findUnique({

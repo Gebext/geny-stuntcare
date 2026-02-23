@@ -22,6 +22,21 @@ export declare class AiService implements OnModuleInit {
         createdAt: Date;
         updatedAt: Date;
     }>;
+    getMotherStoredAnalysis(motherId: string): Promise<{
+        id: string;
+        motherId: string;
+        score: number;
+        status: string;
+        summary: string;
+        bmiScore: number;
+        lilaScore: number;
+        nutritionScore: number;
+        ttdScore: number;
+        pregnancyScore: number;
+        recommendations: import(".prisma/client").Prisma.JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
     runCalculationAndAi(childId: string): Promise<{
         id: string;
         childId: string;
@@ -41,4 +56,20 @@ export declare class AiService implements OnModuleInit {
     private getAiMedicalAdvice;
     private calculateZScore;
     private calculateAge;
+    runMotherAnalysis(motherId: string): Promise<{
+        id: string;
+        motherId: string;
+        score: number;
+        status: string;
+        summary: string;
+        bmiScore: number;
+        lilaScore: number;
+        nutritionScore: number;
+        ttdScore: number;
+        pregnancyScore: number;
+        recommendations: import(".prisma/client").Prisma.JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    private getMotherAiAdvice;
 }

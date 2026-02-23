@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import {
@@ -24,6 +24,9 @@ import {
   X,
   Loader2,
   Save,
+  Pencil,
+  AlertCircle,
+  Utensils,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -33,8 +36,13 @@ import {
   useChildNutrition,
   useChildHealthHistory,
   useAddAnthropometry,
+  useEditAnthropometry,
+  useEditImmunization,
+  useEditNutrition,
+  useEditHealth,
 } from "@/hooks/kader/useChildren";
 import { motion, AnimatePresence } from "framer-motion";
+import BMIMeter from "@/components/child/BMIMeter";
 
 export default function ChildDetailPage() {
   const { id } = useParams();
@@ -43,6 +51,8 @@ export default function ChildDetailPage() {
 
   const [activeTab, setActiveTab] = useState("overview");
   const [isMeasureModalOpen, setIsMeasureModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editType, setEditType] = useState<string>("");
 
   // --- DATA FETCHING ---
   const { data: child, isLoading: isChildLoading } = useChildDetail(childId);
@@ -50,16 +60,79 @@ export default function ChildDetailPage() {
   const { data: nutritions } = useChildNutrition(childId);
   const { data: healthHistories } = useChildHealthHistory(childId);
 
-  // --- MUTATION ---
+  // --- MUTATIONS ---
   const { mutate: addMeasure, isPending } = useAddAnthropometry(childId);
+  const { mutate: editAnthro, isPending: isEditingAnthro } =
+    useEditAnthropometry(childId);
+  const { mutate: editImmu, isPending: isEditingImmu } =
+    useEditImmunization(childId);
+  const { mutate: editNutri, isPending: isEditingNutri } =
+    useEditNutrition(childId);
+  const { mutate: editHealthRec, isPending: isEditingHealth } =
+    useEditHealth(childId);
+
   const { register, handleSubmit, reset } = useForm();
+  const {
+    register: editRegister,
+    handleSubmit: handleEditSubmit,
+    reset: editReset,
+    setValue: setEditValue,
+  } = useForm();
+
+  const isEditPending =
+    isEditingAnthro || isEditingImmu || isEditingNutri || isEditingHealth;
+
+  // Populate edit form when editing item changes
+  useEffect(() => {
+    if (editingItem && editType) {
+      if (editType === "anthropometry") {
+        setEditValue("weightKg", editingItem.weightKg);
+        setEditValue("heightCm", editingItem.heightCm);
+        setEditValue(
+          "measurementDate",
+          editingItem.measurementDate
+            ? new Date(editingItem.measurementDate).toISOString().split("T")[0]
+            : editingItem.createdAt
+              ? new Date(editingItem.createdAt).toISOString().split("T")[0]
+              : "",
+        );
+      } else if (editType === "immunization") {
+        setEditValue("vaccineName", editingItem.vaccineName);
+        setEditValue("status", editingItem.status);
+        setEditValue(
+          "dateGiven",
+          editingItem.dateGiven
+            ? new Date(editingItem.dateGiven).toISOString().split("T")[0]
+            : "",
+        );
+      } else if (editType === "nutrition") {
+        setEditValue("foodType", editingItem.foodType);
+        setEditValue("frequencyPerDay", editingItem.frequencyPerDay);
+        setEditValue("proteinSource", editingItem.proteinSource);
+        setEditValue(
+          "recordedAt",
+          editingItem.recordedAt
+            ? new Date(editingItem.recordedAt).toISOString().split("T")[0]
+            : "",
+        );
+      } else if (editType === "health") {
+        setEditValue("diseaseName", editingItem.diseaseName);
+        setEditValue(
+          "diagnosisDate",
+          editingItem.diagnosisDate
+            ? new Date(editingItem.diagnosisDate).toISOString().split("T")[0]
+            : "",
+        );
+        setEditValue("isChronic", editingItem.isChronic);
+      }
+    }
+  }, [editingItem, editType, setEditValue]);
 
   const onSubmitMeasure = (values: any) => {
     addMeasure(
       {
         weightKg: parseFloat(values.weightKg),
         heightCm: parseFloat(values.heightCm),
-        // Mengubah tanggal ke format ISO 8601 (2023-10-27T00:00:00Z)
         measurementDate: new Date(values.measurementDate).toISOString(),
         headCircumferenceCm: values.headCircumferenceCm
           ? parseFloat(values.headCircumferenceCm)
@@ -75,6 +148,81 @@ export default function ChildDetailPage() {
         },
       },
     );
+  };
+
+  const onEditSave = (values: any) => {
+    if (!editingItem) return;
+    const recordId = editingItem.id;
+
+    const closeEdit = () => {
+      setEditingItem(null);
+      setEditType("");
+      editReset();
+    };
+
+    if (editType === "anthropometry") {
+      editAnthro(
+        {
+          recordId,
+          payload: {
+            weightKg: parseFloat(values.weightKg),
+            heightCm: parseFloat(values.heightCm),
+            measurementDate: values.measurementDate
+              ? new Date(values.measurementDate).toISOString()
+              : undefined,
+          },
+        },
+        { onSuccess: closeEdit },
+      );
+    } else if (editType === "immunization") {
+      editImmu(
+        {
+          recordId,
+          payload: {
+            vaccineName: values.vaccineName,
+            status: values.status,
+            dateGiven: values.dateGiven
+              ? new Date(values.dateGiven).toISOString()
+              : undefined,
+          },
+        },
+        { onSuccess: closeEdit },
+      );
+    } else if (editType === "nutrition") {
+      editNutri(
+        {
+          recordId,
+          payload: {
+            foodType: values.foodType,
+            frequencyPerDay: parseInt(values.frequencyPerDay),
+            proteinSource: values.proteinSource,
+            recordedAt: values.recordedAt
+              ? new Date(values.recordedAt).toISOString()
+              : undefined,
+          },
+        },
+        { onSuccess: closeEdit },
+      );
+    } else if (editType === "health") {
+      editHealthRec(
+        {
+          recordId,
+          payload: {
+            diseaseName: values.diseaseName,
+            isChronic: !!values.isChronic,
+            diagnosisDate: values.diagnosisDate
+              ? new Date(values.diagnosisDate).toISOString()
+              : undefined,
+          },
+        },
+        { onSuccess: closeEdit },
+      );
+    }
+  };
+
+  const openEditModal = (item: any, type: string) => {
+    setEditingItem(item);
+    setEditType(type);
   };
 
   if (isChildLoading)
@@ -169,6 +317,19 @@ export default function ChildDetailPage() {
           ))}
         </div>
 
+        {/* BMI METER */}
+        <div className="mb-6">
+          <BMIMeter
+            weightKg={
+              child?.anthropometries?.[0]?.weightKg || child?.birthWeight || null
+            }
+            heightCm={
+              child?.anthropometries?.[0]?.heightCm || child?.birthLength || null
+            }
+            compact
+          />
+        </div>
+
         {/* TAB NAVIGATION */}
         <div className="bg-white p-2 rounded-[24px] shadow-sm border border-slate-50 flex mb-8">
           {TABS.map((tab) => (
@@ -211,7 +372,7 @@ export default function ChildDetailPage() {
                   {child.anthropometries.map((measure: any, idx: number) => (
                     <div
                       key={idx}
-                      className="bg-white rounded-[25px] border border-slate-50 p-5 shadow-sm flex items-center justify-between"
+                      className="bg-white rounded-[25px] border border-slate-50 p-5 shadow-sm flex items-center justify-between group"
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-[#3AC4B6]">
@@ -219,20 +380,33 @@ export default function ChildDetailPage() {
                         </div>
                         <div>
                           <p className="text-[10px] font-black text-slate-700 uppercase">
-                            {formatDate(measure.createdAt)}
+                            {formatDate(
+                              measure.measurementDate || measure.createdAt,
+                            )}
                           </p>
                           <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">
-                            Umur: {measure.ageInMonths} Bln
+                            Umur: {measure.ageMonth || measure.ageInMonths} Bln
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs font-black text-slate-700">
-                          {measure.weightKg} kg
-                        </p>
-                        <p className="text-[10px] font-bold text-[#3AC4B6]">
-                          {measure.heightCm} cm
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="text-xs font-black text-slate-700">
+                            {measure.weightKg} kg
+                          </p>
+                          <p className="text-[10px] font-bold text-[#3AC4B6]">
+                            {measure.heightCm} cm
+                          </p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            openEditModal(measure, "anthropometry")
+                          }
+                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-100 opacity-0 group-hover:opacity-100 transition-all"
+                          title="Edit Data"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -269,7 +443,7 @@ export default function ChildDetailPage() {
                     immunizations.map((item: any) => (
                       <div
                         key={item.id}
-                        className="bg-white p-4 rounded-[24px] border border-slate-50 shadow-sm flex items-center justify-between"
+                        className="bg-white p-4 rounded-[24px] border border-slate-50 shadow-sm flex items-center justify-between group"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-[10px]">
@@ -284,9 +458,20 @@ export default function ChildDetailPage() {
                             </p>
                           </div>
                         </div>
-                        <span className="bg-emerald-50 text-emerald-500 text-[8px] font-black px-2 py-1 rounded-md uppercase">
-                          {item.status}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-emerald-50 text-emerald-500 text-[8px] font-black px-2 py-1 rounded-md uppercase">
+                            {item.status}
+                          </span>
+                          <button
+                            onClick={() =>
+                              openEditModal(item, "immunization")
+                            }
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-100 opacity-0 group-hover:opacity-100 transition-all"
+                            title="Edit Data"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -303,15 +488,26 @@ export default function ChildDetailPage() {
                     nutritions.map((item: any) => (
                       <div
                         key={item.id}
-                        className="bg-white p-4 rounded-[24px] border border-slate-50 shadow-sm"
+                        className="bg-white p-4 rounded-[24px] border border-slate-50 shadow-sm group"
                       >
                         <div className="flex justify-between items-start">
                           <h4 className="text-[11px] font-black text-slate-700 uppercase">
                             {item.foodType}
                           </h4>
-                          <span className="text-[8px] font-black bg-rose-50 text-rose-500 px-2 py-1 rounded-md">
-                            {item.frequencyPerDay}x Sehari
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[8px] font-black bg-rose-50 text-rose-500 px-2 py-1 rounded-md">
+                              {item.frequencyPerDay}x Sehari
+                            </span>
+                            <button
+                              onClick={() =>
+                                openEditModal(item, "nutrition")
+                              }
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-100 opacity-0 group-hover:opacity-100 transition-all"
+                              title="Edit Data"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
                         <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">
                           Sumber: {item.proteinSource}
@@ -332,7 +528,7 @@ export default function ChildDetailPage() {
                     healthHistories.map((item: any) => (
                       <div
                         key={item.id}
-                        className="bg-white p-4 rounded-[24px] border border-slate-50 shadow-sm flex items-center justify-between"
+                        className="bg-white p-4 rounded-[24px] border border-slate-50 shadow-sm flex items-center justify-between group"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-[10px]">
@@ -347,11 +543,20 @@ export default function ChildDetailPage() {
                             </p>
                           </div>
                         </div>
-                        {item.isChronic && (
-                          <span className="bg-red-500 text-white text-[7px] font-black px-2 py-1 rounded-full uppercase">
-                            Kronis
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {item.isChronic && (
+                            <span className="bg-red-500 text-white text-[7px] font-black px-2 py-1 rounded-full uppercase">
+                              Kronis
+                            </span>
+                          )}
+                          <button
+                            onClick={() => openEditModal(item, "health")}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-100 opacity-0 group-hover:opacity-100 transition-all"
+                            title="Edit Data"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -516,6 +721,194 @@ export default function ChildDetailPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* --- EDIT MODAL --- */}
+      <AnimatePresence>
+        {editingItem && (
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setEditingItem(null);
+                setEditType("");
+                editReset();
+              }}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="relative bg-white w-full max-w-lg rounded-t-[40px] sm:rounded-[40px] p-8 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500">
+                    <Pencil className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">
+                    Edit{" "}
+                    {editType === "anthropometry"
+                      ? "Antropometri"
+                      : editType === "immunization"
+                        ? "Imunisasi"
+                        : editType === "nutrition"
+                          ? "Nutrisi"
+                          : "Kesehatan"}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingItem(null);
+                    setEditType("");
+                    editReset();
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form
+                onSubmit={handleEditSubmit(onEditSave)}
+                className="space-y-5"
+              >
+                {editType === "anthropometry" && (
+                  <>
+                    <div className="space-y-2 text-left">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                        Tanggal Pengukuran
+                      </label>
+                      <input
+                        {...editRegister("measurementDate")}
+                        type="date"
+                        className="w-full bg-slate-50 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none focus:bg-white border-2 border-transparent focus:border-amber-100 transition-all"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <InputField
+                        label="Berat (kg)"
+                        name="weightKg"
+                        register={editRegister}
+                        icon={<Scale />}
+                      />
+                      <InputField
+                        label="Tinggi (cm)"
+                        name="heightCm"
+                        register={editRegister}
+                        icon={<Ruler />}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {editType === "immunization" && (
+                  <>
+                    <EditInputField
+                      label="Nama Vaksin"
+                      name="vaccineName"
+                      register={editRegister}
+                      icon={<ShieldCheck />}
+                    />
+                    <div className="space-y-2 text-left">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                        Tanggal
+                      </label>
+                      <input
+                        {...editRegister("dateGiven")}
+                        type="date"
+                        className="w-full bg-slate-50 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none focus:bg-white border-2 border-transparent focus:border-amber-100 transition-all"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {editType === "nutrition" && (
+                  <>
+                    <EditInputField
+                      label="Makanan"
+                      name="foodType"
+                      register={editRegister}
+                      icon={<Utensils />}
+                    />
+                    <EditInputField
+                      label="Frekuensi"
+                      name="frequencyPerDay"
+                      register={editRegister}
+                      type="number"
+                      icon={<Activity />}
+                    />
+                    <EditInputField
+                      label="Protein"
+                      name="proteinSource"
+                      register={editRegister}
+                      icon={<Plus />}
+                    />
+                    <div className="space-y-2 text-left">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                        Tanggal
+                      </label>
+                      <input
+                        {...editRegister("recordedAt")}
+                        type="date"
+                        className="w-full bg-slate-50 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none focus:bg-white border-2 border-transparent focus:border-amber-100 transition-all"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {editType === "health" && (
+                  <>
+                    <EditInputField
+                      label="Keluhan"
+                      name="diseaseName"
+                      register={editRegister}
+                      icon={<AlertCircle />}
+                    />
+                    <div className="space-y-2 text-left">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                        Tanggal
+                      </label>
+                      <input
+                        {...editRegister("diagnosisDate")}
+                        type="date"
+                        className="w-full bg-slate-50 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none focus:bg-white border-2 border-transparent focus:border-amber-100 transition-all"
+                      />
+                    </div>
+                    <div className="bg-slate-50 p-5 rounded-[22px] flex items-center justify-between border-2 border-transparent">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Kronis?
+                      </span>
+                      <input
+                        {...editRegister("isChronic")}
+                        type="checkbox"
+                        className="w-6 h-6 accent-amber-500 cursor-pointer"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isEditPending}
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-white py-5 rounded-2xl font-black text-[11px] tracking-[0.2em] shadow-lg shadow-amber-100 flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-50 mt-4"
+                >
+                  {isEditPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  PERBARUI DATA
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -579,6 +972,28 @@ function InputField({ label, name, register, icon, ...props }: any) {
         />
         {icon && (
           <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#3AC4B6] transition-colors scale-75">
+            {icon}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EditInputField({ label, name, register, icon, ...props }: any) {
+  return (
+    <div className="space-y-2 text-left">
+      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">
+        {label}
+      </label>
+      <div className="relative group">
+        <input
+          {...register(name)}
+          {...props}
+          className="w-full bg-slate-50 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none focus:bg-white border-2 border-transparent focus:border-amber-100 transition-all"
+        />
+        {icon && (
+          <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-amber-500 transition-colors scale-75">
             {icon}
           </div>
         )}

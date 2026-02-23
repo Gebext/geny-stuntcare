@@ -18,6 +18,46 @@ let HealthService = HealthService_1 = class HealthService {
         this.prisma = prisma;
         this.logger = new common_1.Logger(HealthService_1.name);
     }
+    async updateRecord(userId, recordId, dto) {
+        this.logger.log(`[UPDATE] Request update riwayat kesehatan ID: ${recordId}`);
+        const existing = await this.prisma.healthHistory.findUnique({
+            where: { id: recordId },
+            include: { child: { include: { mother: true } } },
+        });
+        if (!existing) {
+            this.logger.warn(`[NOT FOUND] HealthHistory ID ${recordId} tidak ditemukan`);
+            throw new common_1.NotFoundException('Data riwayat kesehatan tidak ditemukan');
+        }
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { roles: { include: { role: true } } },
+        });
+        const isKader = user?.roles.some((r) => r.role.name === 'KADER');
+        const isOwner = existing.child.mother.userId === userId;
+        if (!isKader && !isOwner) {
+            this.logger.error(`[FORBIDDEN] User ${userId} tidak punya akses untuk update data ini`);
+            throw new common_1.ForbiddenException('Anda tidak memiliki akses untuk mengubah data ini.');
+        }
+        const updateData = {};
+        if (dto.diseaseName !== undefined)
+            updateData.diseaseName = dto.diseaseName;
+        if (dto.isChronic !== undefined)
+            updateData.isChronic = dto.isChronic;
+        if (dto.diagnosisDate)
+            updateData.diagnosisDate = new Date(dto.diagnosisDate);
+        try {
+            const result = await this.prisma.healthHistory.update({
+                where: { id: recordId },
+                data: updateData,
+            });
+            this.logger.log(`[SUCCESS] HealthHistory ID ${recordId} berhasil diupdate`);
+            return result;
+        }
+        catch (error) {
+            this.logger.error(`[DB ERROR] Gagal update riwayat kesehatan: ${error.message}`);
+            throw error;
+        }
+    }
     async addRecord(userId, dto) {
         this.logger.log(`[CREATE] Mencatat riwayat kesehatan baru untuk Child ID: ${dto.childId}`);
         const child = await this.prisma.childProfile.findUnique({

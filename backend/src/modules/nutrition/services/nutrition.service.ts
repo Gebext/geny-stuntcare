@@ -5,6 +5,7 @@ import {
   Logger, // 1. Import Logger
 } from '@nestjs/common';
 import { CreateNutritionDto } from '../dtos/create-nutrition.dto';
+import { UpdateNutritionDto } from '../dtos/update-nutrition.dto';
 import { PrismaService } from 'src/prisma/prismaservice';
 
 @Injectable()
@@ -13,6 +14,54 @@ export class NutritionService {
   private readonly logger = new Logger(NutritionService.name);
 
   constructor(private prisma: PrismaService) {}
+
+  async updateRecord(userId: string, recordId: string, dto: UpdateNutritionDto) {
+    this.logger.log(
+      `[UPDATE] Request update nutrisi ID: ${recordId}`,
+    );
+
+    const existing = await this.prisma.nutritionHistory.findUnique({
+      where: { id: recordId },
+      include: { child: { include: { mother: true } } },
+    });
+
+    if (!existing) {
+      this.logger.warn(`[NOT FOUND] NutritionHistory ID ${recordId} tidak ditemukan`);
+      throw new NotFoundException('Data nutrisi tidak ditemukan');
+    }
+
+    // Validasi akses
+    const user: any = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: { include: { role: true } } },
+    });
+
+    const isKader = user?.roles.some((r: any) => r.role.name === 'KADER');
+    const isOwner = existing.child.mother.userId === userId;
+
+    if (!isKader && !isOwner) {
+      this.logger.error(`[FORBIDDEN] User ${userId} tidak punya akses update nutrisi ini`);
+      throw new ForbiddenException('Anda tidak memiliki akses untuk mengubah data ini.');
+    }
+
+    const updateData: any = {};
+    if (dto.foodType !== undefined) updateData.foodType = dto.foodType;
+    if (dto.frequencyPerDay !== undefined) updateData.frequencyPerDay = dto.frequencyPerDay;
+    if (dto.proteinSource !== undefined) updateData.proteinSource = dto.proteinSource;
+    if (dto.recordedAt) updateData.recordedAt = new Date(dto.recordedAt);
+
+    try {
+      const result = await this.prisma.nutritionHistory.update({
+        where: { id: recordId },
+        data: updateData,
+      });
+      this.logger.log(`[SUCCESS] NutritionHistory ID ${recordId} berhasil diupdate`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[DB ERROR] Gagal update nutrisi: ${error.message}`);
+      throw error;
+    }
+  }
 
   async addRecord(userId: string, dto: CreateNutritionDto) {
     this.logger.log(

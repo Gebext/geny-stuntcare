@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Baby, ChevronRight, Brain, Sparkles } from "lucide-react";
+import { Baby, ChevronRight, Brain, Heart } from "lucide-react";
 import { useMotherChildren } from "@/hooks/mother/useChildren";
 
 export default function MotherAnalysisSelectionPage() {
@@ -21,14 +21,42 @@ export default function MotherAnalysisSelectionPage() {
             Analisis Ai
           </h1>
           <p className="text-teal-50/80 text-[9px] md:text-sm font-medium mt-0.5">
-            Sistem kami menganalisis data antropometri dan pola makan untuk
-            memberi rekomendasi kesehatan terbaik
+            Sistem kami menganalisis data untuk memberi rekomendasi kesehatan
+            terbaik
           </p>
         </div>
       </header>
 
+      {/* Mother Self-Analysis Card */}
       <h3 className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] md:tracking-[0.2em] ml-1 md:ml-2 mb-3 md:mb-4 mt-5 md:mt-6">
-        Daftar Anak Anda
+        Analisis Kesehatan Bunda
+      </h3>
+
+      <button
+        onClick={() => router.push("/dashboard/mother/me/analysis")}
+        className="w-full bg-gradient-to-r from-pink-50 to-rose-50 p-4 md:p-5 rounded-[22px] md:rounded-[30px] border border-pink-100 shadow-sm flex items-center justify-between group hover:border-pink-300 hover:shadow-md transition-all mb-6 md:mb-8"
+      >
+        <div className="flex items-center gap-3 md:gap-4">
+          <div className="w-11 h-11 md:w-14 md:h-14 bg-pink-100 rounded-[16px] md:rounded-2xl flex items-center justify-center text-pink-500 group-hover:bg-pink-500 group-hover:text-white transition-colors">
+            <Heart className="w-5.5 h-5.5 md:w-7 md:h-7" />
+          </div>
+          <div className="text-left">
+            <h4 className="font-black text-slate-800 text-sm md:text-base tracking-tight">
+              Kesehatan Bunda
+            </h4>
+            <p className="text-slate-400 text-[9px] md:text-[10px] font-bold uppercase tracking-wider">
+              BMI • LILA • Gizi • Kehamilan
+            </p>
+          </div>
+        </div>
+        <div className="bg-pink-100 p-1.5 md:p-2 rounded-lg md:rounded-xl text-pink-300 group-hover:bg-pink-200 group-hover:text-pink-500 shrink-0">
+          <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+        </div>
+      </button>
+
+      {/* Child Analysis */}
+      <h3 className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] md:tracking-[0.2em] ml-1 md:ml-2 mb-3 md:mb-4">
+        Analisis Kesehatan Anak
       </h3>
 
       {isLoading ? (
@@ -92,3 +120,4 @@ function calculateAge(birthDate: string) {
     (now.getMonth() - birth.getMonth())
   );
 }
+

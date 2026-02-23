@@ -1,4 +1,4 @@
-import { ChildFilterDto, CreateChildDto } from '../dtos/create-child.dto';
+import { ChildFilterDto, CreateChildDto, UpdateChildDto } from '../dtos/create-child.dto';
 import { ChildService } from '../services/child-service';
 export declare class ChildController {
     private readonly childService;
@@ -35,6 +35,8 @@ export declare class ChildController {
                 childId: string;
                 weightKg: number;
                 heightCm: number;
+                headCircumferenceCm: number;
+                armCircumferenceCm: number;
                 ageMonth: number;
                 measuredBy: string;
                 measurementDate: Date;
@@ -48,6 +50,8 @@ export declare class ChildController {
             birthDate: Date;
             birthWeight: number;
             birthLength: number;
+            birthHeadCircumference: number;
+            birthArmCircumference: number;
             asiExclusive: boolean;
             isVerified: boolean;
             stuntingRisk: string;
@@ -68,6 +72,8 @@ export declare class ChildController {
         birthDate: Date;
         birthWeight: number;
         birthLength: number;
+        birthHeadCircumference: number;
+        birthArmCircumference: number;
         asiExclusive: boolean;
         isVerified: boolean;
         stuntingRisk: string;
@@ -82,13 +88,15 @@ export declare class ChildController {
         birthDate: Date;
         birthWeight: number;
         birthLength: number;
+        birthHeadCircumference: number;
+        birthArmCircumference: number;
         asiExclusive: boolean;
         isVerified: boolean;
         stuntingRisk: string;
         createdAt: Date;
         updatedAt: Date;
     }[]>;
-    update(req: any, id: string, dto: any): Promise<{
+    update(req: any, id: string, dto: UpdateChildDto): Promise<{
         id: string;
         motherId: string;
         name: string;
@@ -96,6 +104,8 @@ export declare class ChildController {
         birthDate: Date;
         birthWeight: number;
         birthLength: number;
+        birthHeadCircumference: number;
+        birthArmCircumference: number;
         asiExclusive: boolean;
         isVerified: boolean;
         stuntingRisk: string;
@@ -142,6 +152,8 @@ export declare class ChildController {
             childId: string;
             weightKg: number;
             heightCm: number;
+            headCircumferenceCm: number;
+            armCircumferenceCm: number;
             ageMonth: number;
             measuredBy: string;
             measurementDate: Date;
@@ -194,6 +206,8 @@ export declare class ChildController {
         birthDate: Date;
         birthWeight: number;
         birthLength: number;
+        birthHeadCircumference: number;
+        birthArmCircumference: number;
         asiExclusive: boolean;
         isVerified: boolean;
         stuntingRisk: string;

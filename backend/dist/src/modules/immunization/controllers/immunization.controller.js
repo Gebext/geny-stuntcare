@@ -18,6 +18,7 @@ const jwt_auth_guard_1 = require("../../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../../common/guards/roles.guard");
 const immunization_service_1 = require("../services/immunization.service");
 const crate_immunization_dto_1 = require("../dtos/crate-immunization.dto");
+const update_immunization_dto_1 = require("../dtos/update-immunization.dto");
 const roles_decorators_1 = require("../../../common/decorators/roles.decorators");
 let ImmunizationController = class ImmunizationController {
     constructor(service) {
@@ -26,6 +27,10 @@ let ImmunizationController = class ImmunizationController {
     async create(req, dto) {
         const userId = req.user.id || req.user.sub;
         return this.service.addRecord(userId, dto);
+    }
+    async update(req, id, dto) {
+        const userId = req.user.id || req.user.sub;
+        return this.service.updateRecord(userId, id, dto);
     }
     async getHistory(childId) {
         return this.service.getChildHistory(childId);
@@ -41,6 +46,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, crate_immunization_dto_1.CreateImmunizationDto]),
     __metadata("design:returntype", Promise)
 ], ImmunizationController.prototype, "create", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    (0, roles_decorators_1.Roles)('KADER', 'MOTHER'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, update_immunization_dto_1.UpdateImmunizationDto]),
+    __metadata("design:returntype", Promise)
+], ImmunizationController.prototype, "update", null);
 __decorate([
     (0, common_1.Get)('child/:childId'),
     (0, roles_decorators_1.Roles)('KADER', 'MOTHER', 'ADMIN'),

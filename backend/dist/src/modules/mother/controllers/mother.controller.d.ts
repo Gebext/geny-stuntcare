@@ -36,6 +36,8 @@ export declare class MotherController {
             birthDate: Date;
             birthWeight: number;
             birthLength: number;
+            birthHeadCircumference: number;
+            birthArmCircumference: number;
             asiExclusive: boolean;
             isVerified: boolean;
             stuntingRisk: string;
@@ -71,6 +73,8 @@ export declare class MotherController {
             birthDate: Date;
             birthWeight: number;
             birthLength: number;
+            birthHeadCircumference: number;
+            birthArmCircumference: number;
             asiExclusive: boolean;
             isVerified: boolean;
             stuntingRisk: string;

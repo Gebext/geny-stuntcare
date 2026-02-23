@@ -30,6 +30,15 @@ export class AiService implements OnModuleInit {
     return analysis;
   }
 
+  async getMotherStoredAnalysis(motherId: string) {
+    const analysis = await this.prisma.motherAiAnalysis.findUnique({
+      where: { motherId },
+    });
+    if (!analysis)
+      throw new NotFoundException('Belum ada riwayat analisis untuk Bunda.');
+    return analysis;
+  }
+
   async runCalculationAndAi(childId: string) {
     this.logger.log(`[START] Diagnosis Tegas untuk Child ID: ${childId}`);
 
@@ -114,7 +123,10 @@ export class AiService implements OnModuleInit {
     DATA PASIEN:
     - Nama: ${child.name} | Umur: ${ageMonths} bulan | JK: ${child.gender}
     - BB: ${latest.weightKg} kg | TB: ${latest.heightCm} cm
+    - Lingkar Kepala: ${latest.headCircumferenceCm ? latest.headCircumferenceCm + ' cm' : 'Belum diukur'}
+    - Lingkar Lengan (LILA): ${latest.armCircumferenceCm ? latest.armCircumferenceCm + ' cm' : 'Belum diukur'}
     - Z-Score BB/U (Input): ${zScore.toFixed(2)}
+    - Data Lahir: BB ${child.birthWeight} kg, PB ${child.birthLength} cm${child.birthHeadCircumference ? ', LK ' + child.birthHeadCircumference + ' cm' : ''}${child.birthArmCircumference ? ', LILA ' + child.birthArmCircumference + ' cm' : ''}
 
     INSTRUKSI PENILAIAN:
     1. STATUS GIZI: Gunakan standar WHO (Gizi Buruk/Kurang/Baik/Obesitas).
@@ -220,5 +232,160 @@ export class AiService implements OnModuleInit {
       today.getMonth() -
       birth.getMonth()
     );
+  }
+
+  // ========================================
+  // MOTHER ANALYSIS
+  // ========================================
+
+  async runMotherAnalysis(motherId: string) {
+    this.logger.log(`[START] Analisis Kesehatan Ibu: ${motherId}`);
+
+    const mother = await this.prisma.motherProfile.findUnique({
+      where: { id: motherId },
+      include: {
+        environment: true,
+        childProfiles: {
+          include: {
+            anthropometries: { orderBy: { measurementDate: 'desc' }, take: 1 },
+          },
+        },
+        user: true,
+      },
+    });
+
+    if (!mother) throw new NotFoundException('Profil ibu tidak ditemukan.');
+
+    // Hitung BMI ibu
+    const bmi =
+      mother.weightKg && mother.heightCm
+        ? mother.weightKg / Math.pow(mother.heightCm / 100, 2)
+        : 0;
+
+    const aiResult = await this.getMotherAiAdvice(mother, bmi);
+
+    try {
+      return await this.prisma.motherAiAnalysis.upsert({
+        where: { motherId },
+        update: {
+          score: aiResult.score,
+          status: aiResult.status,
+          summary: aiResult.summary,
+          bmiScore: aiResult.bmiScore,
+          lilaScore: aiResult.lilaScore,
+          nutritionScore: aiResult.nutritionScore,
+          ttdScore: aiResult.ttdScore,
+          pregnancyScore: aiResult.pregnancyScore,
+          recommendations: aiResult.recommendations,
+        },
+        create: {
+          motherId,
+          score: aiResult.score,
+          status: aiResult.status,
+          summary: aiResult.summary,
+          bmiScore: aiResult.bmiScore,
+          lilaScore: aiResult.lilaScore,
+          nutritionScore: aiResult.nutritionScore,
+          ttdScore: aiResult.ttdScore,
+          pregnancyScore: aiResult.pregnancyScore,
+          recommendations: aiResult.recommendations,
+        },
+      });
+    } catch (e) {
+      this.logger.error(`[DB ERROR] ${e.message}`);
+      throw new InternalServerErrorException(
+        'Gagal menyimpan hasil analisis ibu.',
+      );
+    }
+  }
+
+  private async getMotherAiAdvice(mother: any, bmi: number) {
+    this.logger.log(`[AI REQUEST] Analisis Kesehatan Ibu via Llama-3...`);
+
+    const childrenInfo = mother.childProfiles
+      ?.map((c: any) => {
+        const latest = c.anthropometries?.[0];
+        return `- ${c.name} (${c.gender}, BB Lahir: ${c.birthWeight}kg, PB Lahir: ${c.birthLength}cm${latest ? `, BB Terakhir: ${latest.weightKg}kg, TB Terakhir: ${latest.heightCm}cm` : ''})`;
+      })
+      .join('\n') || 'Belum ada data anak.';
+
+    const envInfo = mother.environment
+      ? `Air Bersih: ${mother.environment.cleanWater ? 'Ya' : 'Tidak'}, Sanitasi: ${mother.environment.sanitation}, Jarak Faskes: ${mother.environment.distanceFaskesKm}km, Transportasi: ${mother.environment.transportation}`
+      : 'Data lingkungan belum tersedia.';
+
+    const prompt = `
+    PERAN: Anda adalah Dokter Spesialis Kandungan dan Ahli Gizi Ibu yang bijaksana, empatik, dan solutif.
+    TUGAS: Analisis data kesehatan ibu dan berikan diagnosis serta rekomendasi yang akurat namun disampaikan dengan bahasa yang tenang, mendidik, dan tidak menakut-nakuti.
+    TUJUAN: Memberikan pemahaman kepada ibu akan kondisi kesehatannya, serta memberikan langkah konkret untuk perbaikan gizi dan kesehatan.
+
+    DATA IBU:
+    - Nama: ${mother.user?.name || 'Bunda'}
+    - Usia: ${mother.age} tahun
+    - Berat Badan: ${mother.weightKg} kg
+    - Tinggi Badan: ${mother.heightCm} cm
+    - BMI: ${bmi.toFixed(1)}
+    - LILA (Lingkar Lengan Atas): ${mother.lilaCm} cm
+    - Status Hamil: ${mother.isPregnant ? `Ya, Trimester ${mother.trimester || 'tidak diketahui'}` : 'Tidak Hamil'}
+    - Kepatuhan TTD: ${mother.ttdCompliance || 'Tidak Diketahui'}
+
+    DATA LINGKUNGAN:
+    ${envInfo}
+
+    DATA ANAK:
+    ${childrenInfo}
+
+    INSTRUKSI PENILAIAN:
+    1. ANALISIS GIZI IBU:
+       - Evaluasi BMI: Underweight (<18.5), Normal (18.5-24.9), Overweight (25-29.9), Obesitas (>=30)
+       - LILA < 23.5 cm menunjukkan risiko KEK (Kurang Energi Kronik)
+       - TTD (Tablet Tambah Darah) sangat penting terutama untuk ibu hamil
+    
+    2. ${mother.isPregnant ? 'ANALISIS KEHAMILAN: Evaluasi status gizi ibu hamil berdasarkan trimester, berat badan ideal, dan risiko komplikasi.' : 'ANALISIS PASCA MELAHIRKAN / TIDAK HAMIL: Evaluasi status gizi ibu dan kesiapan untuk kehamilan berikutnya jika relevan.'}
+    
+    3. TONE (GAYA BAHASA): Gunakan bahasa yang suportif dan positif. Jika kondisi kurang baik, fokus pada "Potensi Perbaikan".
+    
+    4. SCORING (0-100):
+       - Jika data terbatas, berikan skor moderat (60-75) dengan catatan perlu pemantauan.
+       - Skor < 50 hanya untuk kondisi yang membutuhkan perhatian medis segera.
+    
+    5. SUMMARY: Jelaskan status kesehatan ibu secara keseluruhan dengan objektif namun tenang.
+    
+    6. REKOMENDASI: Berikan saran praktis:
+       - Menu makanan bergizi untuk ibu${mother.isPregnant ? ' hamil (sesuai trimester)' : ''}
+       - Pola hidup sehat
+       - Pemeriksaan rutin yang direkomendasikan
+       - Tips kebersihan dan sanitasi
+
+    OUTPUT JSON MURNI:
+    {
+      "score": number,
+      "status": "string",
+      "summary": "string",
+      "bmiScore": number,
+      "lilaScore": number,
+      "nutritionScore": number,
+      "ttdScore": number,
+      "pregnancyScore": number,
+      "recommendations": [
+        { "title": "string", "desc": "string", "type": "SUCCESS" | "WARNING" | "INFO" }
+      ]
+    }
+    `;
+
+    try {
+      const completion = await this.groq.chat.completions.create({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'llama-3.3-70b-versatile',
+        response_format: { type: 'json_object' },
+        temperature: 0.1,
+      });
+
+      return JSON.parse(completion.choices[0].message.content);
+    } catch (error) {
+      this.logger.error(`[AI CRITICAL ERROR] ${error.message}`);
+      throw new ServiceUnavailableException(
+        'Gagal melakukan analisis AI untuk ibu.',
+      );
+    }
   }
 }

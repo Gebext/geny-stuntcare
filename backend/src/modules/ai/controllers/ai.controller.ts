@@ -26,7 +26,22 @@ export class AiController {
   @Post('trigger/:childId')
   async triggerAnalysis(@Param('childId') childId: string) {
     this.logger.log(`[POST] Menjalankan trigger AI untuk: ${childId}`);
-    // Sama seperti GET, jangan dibungkus manual lagi
     return this.aiService.runCalculationAndAi(childId);
+  }
+
+  // ========================================
+  // MOTHER AI ANALYSIS ENDPOINTS
+  // ========================================
+
+  @Get('mother/:motherId')
+  async getMotherAnalysis(@Param('motherId') motherId: string) {
+    this.logger.log(`[GET] Request analisis ibu untuk: ${motherId}`);
+    return this.aiService.getMotherStoredAnalysis(motherId);
+  }
+
+  @Post('mother/trigger/:motherId')
+  async triggerMotherAnalysis(@Param('motherId') motherId: string) {
+    this.logger.log(`[POST] Menjalankan trigger AI untuk ibu: ${motherId}`);
+    return this.aiService.runMotherAnalysis(motherId);
   }
 }

@@ -30,6 +30,14 @@ let AiController = AiController_1 = class AiController {
         this.logger.log(`[POST] Menjalankan trigger AI untuk: ${childId}`);
         return this.aiService.runCalculationAndAi(childId);
     }
+    async getMotherAnalysis(motherId) {
+        this.logger.log(`[GET] Request analisis ibu untuk: ${motherId}`);
+        return this.aiService.getMotherStoredAnalysis(motherId);
+    }
+    async triggerMotherAnalysis(motherId) {
+        this.logger.log(`[POST] Menjalankan trigger AI untuk ibu: ${motherId}`);
+        return this.aiService.runMotherAnalysis(motherId);
+    }
 };
 exports.AiController = AiController;
 __decorate([
@@ -46,6 +54,20 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AiController.prototype, "triggerAnalysis", null);
+__decorate([
+    (0, common_1.Get)('mother/:motherId'),
+    __param(0, (0, common_1.Param)('motherId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AiController.prototype, "getMotherAnalysis", null);
+__decorate([
+    (0, common_1.Post)('mother/trigger/:motherId'),
+    __param(0, (0, common_1.Param)('motherId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AiController.prototype, "triggerMotherAnalysis", null);
 exports.AiController = AiController = AiController_1 = __decorate([
     (0, common_1.Controller)('ai-analysis'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

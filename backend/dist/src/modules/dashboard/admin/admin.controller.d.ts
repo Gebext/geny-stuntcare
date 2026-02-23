@@ -44,6 +44,8 @@ export declare class AdminDashboardController {
                 childId: string;
                 weightKg: number;
                 heightCm: number;
+                headCircumferenceCm: number;
+                armCircumferenceCm: number;
                 ageMonth: number;
                 measuredBy: string;
                 measurementDate: Date;
@@ -58,6 +60,8 @@ export declare class AdminDashboardController {
             birthDate: Date;
             birthWeight: number;
             birthLength: number;
+            birthHeadCircumference: number;
+            birthArmCircumference: number;
             asiExclusive: boolean;
             isVerified: boolean;
             stuntingRisk: string;
@@ -127,6 +131,8 @@ export declare class AdminDashboardController {
                 childId: string;
                 weightKg: number;
                 heightCm: number;
+                headCircumferenceCm: number;
+                armCircumferenceCm: number;
                 ageMonth: number;
                 measuredBy: string;
                 measurementDate: Date;
@@ -163,6 +169,8 @@ export declare class AdminDashboardController {
             birthDate: Date;
             birthWeight: number;
             birthLength: number;
+            birthHeadCircumference: number;
+            birthArmCircumference: number;
             asiExclusive: boolean;
             isVerified: boolean;
             stuntingRisk: string;

@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Body,
   Param,
   Request,
@@ -13,6 +14,7 @@ import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { NutritionService } from '../services/nutrition.service';
 import { CreateNutritionDto } from '../dtos/create-nutrition.dto';
+import { UpdateNutritionDto } from '../dtos/update-nutrition.dto';
 import { Roles } from 'src/common/decorators/roles.decorators';
 import { ResponseWrapperInterceptor } from 'src/common/interceptors/response-wrapper.interceptor';
 
@@ -27,6 +29,17 @@ export class NutritionController {
   async create(@Request() req, @Body() dto: CreateNutritionDto) {
     const userId = req.user.id || req.user.sub;
     return this.service.addRecord(userId, dto);
+  }
+
+  @Patch(':id')
+  @Roles('KADER', 'MOTHER')
+  async update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateNutritionDto,
+  ) {
+    const userId = req.user.id || req.user.sub;
+    return this.service.updateRecord(userId, id, dto);
   }
 
   @Get('child/:childId')

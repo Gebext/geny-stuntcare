@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Body,
   Param,
   Request,
@@ -11,6 +12,7 @@ import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { ImmunizationService } from '../services/immunization.service';
 import { CreateImmunizationDto } from '../dtos/crate-immunization.dto';
+import { UpdateImmunizationDto } from '../dtos/update-immunization.dto';
 import { Roles } from 'src/common/decorators/roles.decorators';
 
 @Controller('immunization')
@@ -23,6 +25,17 @@ export class ImmunizationController {
   async create(@Request() req, @Body() dto: CreateImmunizationDto) {
     const userId = req.user.id || req.user.sub;
     return this.service.addRecord(userId, dto);
+  }
+
+  @Patch(':id')
+  @Roles('KADER', 'MOTHER')
+  async update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateImmunizationDto,
+  ) {
+    const userId = req.user.id || req.user.sub;
+    return this.service.updateRecord(userId, id, dto);
   }
 
   @Get('child/:childId')

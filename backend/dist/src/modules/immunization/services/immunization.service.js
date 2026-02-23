@@ -18,6 +18,46 @@ let ImmunizationService = ImmunizationService_1 = class ImmunizationService {
         this.prisma = prisma;
         this.logger = new common_1.Logger(ImmunizationService_1.name);
     }
+    async updateRecord(userId, recordId, dto) {
+        this.logger.log(`[UPDATE] Request update imunisasi ID: ${recordId}`);
+        const existing = await this.prisma.immunization.findUnique({
+            where: { id: recordId },
+            include: { child: { include: { mother: true } } },
+        });
+        if (!existing) {
+            this.logger.warn(`[NOT FOUND] Immunization ID ${recordId} tidak ditemukan`);
+            throw new common_1.NotFoundException('Data imunisasi tidak ditemukan');
+        }
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { roles: { include: { role: true } } },
+        });
+        const isKader = user?.roles.some((r) => r.role.name === 'KADER');
+        const isOwner = existing.child.mother.userId === userId;
+        if (!isKader && !isOwner) {
+            this.logger.error(`[FORBIDDEN] User ${userId} tidak punya akses update imunisasi ini`);
+            throw new common_1.ForbiddenException('Anda tidak memiliki akses untuk mengubah data ini.');
+        }
+        const updateData = {};
+        if (dto.vaccineName !== undefined)
+            updateData.vaccineName = dto.vaccineName;
+        if (dto.status !== undefined)
+            updateData.status = dto.status;
+        if (dto.dateGiven)
+            updateData.dateGiven = new Date(dto.dateGiven);
+        try {
+            const result = await this.prisma.immunization.update({
+                where: { id: recordId },
+                data: updateData,
+            });
+            this.logger.log(`[SUCCESS] Immunization ID ${recordId} berhasil diupdate`);
+            return result;
+        }
+        catch (error) {
+            this.logger.error(`[DB ERROR] Gagal update imunisasi: ${error.message}`);
+            throw error;
+        }
+    }
     async addRecord(userId, dto) {
         this.logger.log(`[CREATE] Mencatat data imunisasi '${dto.vaccineName}' untuk Child ID: ${dto.childId}`);
         const child = await this.prisma.childProfile.findUnique({

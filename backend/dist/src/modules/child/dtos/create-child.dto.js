@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChildFilterDto = exports.CreateChildDto = void 0;
+exports.ChildFilterDto = exports.UpdateChildDto = exports.CreateChildDto = void 0;
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 class CreateChildDto {
@@ -39,9 +39,64 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateChildDto.prototype, "birthLength", void 0);
 __decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateChildDto.prototype, "birthHeadCircumference", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateChildDto.prototype, "birthArmCircumference", void 0);
+__decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateChildDto.prototype, "asiExclusive", void 0);
+class UpdateChildDto {
+}
+exports.UpdateChildDto = UpdateChildDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateChildDto.prototype, "name", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(['L', 'P'], {
+        message: 'Gender must be L (Laki-laki) or P (Perempuan)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateChildDto.prototype, "gender", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateChildDto.prototype, "birthDate", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateChildDto.prototype, "birthWeight", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateChildDto.prototype, "birthLength", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateChildDto.prototype, "birthHeadCircumference", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateChildDto.prototype, "birthArmCircumference", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], UpdateChildDto.prototype, "asiExclusive", void 0);
 class ChildFilterDto {
     constructor() {
         this.page = 1;

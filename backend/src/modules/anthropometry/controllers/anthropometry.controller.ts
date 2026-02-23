@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Body,
   Param,
   Request,
@@ -11,6 +12,8 @@ import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { AnthropometryService } from '../services/anthropometry.service';
 import { CreateAnthropometryDto } from '../dtos/create-anthropometry.dto';
+import { UpdateAnthropometryDto } from '../dtos/update-anthropometry.dto';
+import { Roles } from 'src/common/decorators/roles.decorators';
 
 @Controller('anthropometry')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -27,6 +30,17 @@ export class AnthropometryController {
       roleIds,
       dto,
     );
+  }
+
+  @Patch(':id')
+  @Roles('KADER', 'MOTHER')
+  async update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateAnthropometryDto,
+  ) {
+    const roleIds = req.user.roles.map((ur: any) => ur.roleId);
+    return this.service.updateRecord(req.user.id, roleIds, id, dto);
   }
 
   @Get('child/:childId')

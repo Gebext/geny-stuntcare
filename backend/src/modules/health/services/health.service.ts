@@ -5,6 +5,7 @@ import {
   Logger, // 1. Import Logger
 } from '@nestjs/common';
 import { CreateHealthHistoryDto } from '../dtos/create-health-history.dto';
+import { UpdateHealthHistoryDto } from '../dtos/update-health-history.dto';
 import { PrismaService } from 'src/prisma/prismaservice';
 
 @Injectable()
@@ -13,6 +14,53 @@ export class HealthService {
   private readonly logger = new Logger(HealthService.name);
 
   constructor(private prisma: PrismaService) {}
+
+  async updateRecord(userId: string, recordId: string, dto: UpdateHealthHistoryDto) {
+    this.logger.log(
+      `[UPDATE] Request update riwayat kesehatan ID: ${recordId}`,
+    );
+
+    const existing = await this.prisma.healthHistory.findUnique({
+      where: { id: recordId },
+      include: { child: { include: { mother: true } } },
+    });
+
+    if (!existing) {
+      this.logger.warn(`[NOT FOUND] HealthHistory ID ${recordId} tidak ditemukan`);
+      throw new NotFoundException('Data riwayat kesehatan tidak ditemukan');
+    }
+
+    // Validasi akses
+    const user: any = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: { include: { role: true } } },
+    });
+
+    const isKader = user?.roles.some((r: any) => r.role.name === 'KADER');
+    const isOwner = existing.child.mother.userId === userId;
+
+    if (!isKader && !isOwner) {
+      this.logger.error(`[FORBIDDEN] User ${userId} tidak punya akses untuk update data ini`);
+      throw new ForbiddenException('Anda tidak memiliki akses untuk mengubah data ini.');
+    }
+
+    const updateData: any = {};
+    if (dto.diseaseName !== undefined) updateData.diseaseName = dto.diseaseName;
+    if (dto.isChronic !== undefined) updateData.isChronic = dto.isChronic;
+    if (dto.diagnosisDate) updateData.diagnosisDate = new Date(dto.diagnosisDate);
+
+    try {
+      const result = await this.prisma.healthHistory.update({
+        where: { id: recordId },
+        data: updateData,
+      });
+      this.logger.log(`[SUCCESS] HealthHistory ID ${recordId} berhasil diupdate`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[DB ERROR] Gagal update riwayat kesehatan: ${error.message}`);
+      throw error;
+    }
+  }
 
   async addRecord(userId: string, dto: CreateHealthHistoryDto) {
     this.logger.log(
