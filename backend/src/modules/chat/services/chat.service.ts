@@ -124,7 +124,7 @@ export class ChatService implements OnModuleInit {
     }
 
     const completion = await this.groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+      model: process.env.AI_MODEL || 'qwen/qwen3.8-27b,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: dto.message },
