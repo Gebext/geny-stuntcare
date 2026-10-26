@@ -156,7 +156,7 @@ export class AiService implements OnModuleInit {
     try {
       const completion = await this.groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
-        model: process.env.AI_MODEL || 'llama-3.1-70b-versatile',
+        model: process.env.AI_MODEL || 'llama-3.1-8b-instant',
         response_format: { type: 'json_object' },
         temperature: 0.1,
       });
