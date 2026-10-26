@@ -156,9 +156,9 @@ export class AiService implements OnModuleInit {
     try {
       const completion = await this.groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
-        model: 'llama-3.3-70b-versatile',
+        model: process.env.AI_MODEL || 'llama-3.3-70b-specdec',
         response_format: { type: 'json_object' },
-        temperature: 0.1, // Sangat rendah agar AI tidak "kreatif" dan tetap pada fakta medis
+        temperature: 0.1,
       });
 
       return JSON.parse(completion.choices[0].message.content);
@@ -169,8 +169,6 @@ export class AiService implements OnModuleInit {
   }
 
   private calculateZScore(w: number, g: string, age: number) {
-    // Data WHO Weight-for-Age (WFA) Simplified [Age(Mo), Median(Kg), SD]
-    // Sumber: WHO Child Growth Standards
     const points =
       g === 'MALE'
         ? [
@@ -198,7 +196,6 @@ export class AiService implements OnModuleInit {
             [60, 18.2, 2.2],
           ];
 
-    // Temukan rentang usia untuk interpolasi
     let lower = points[0];
     let upper = points[points.length - 1];
 
@@ -256,7 +253,6 @@ export class AiService implements OnModuleInit {
 
     if (!mother) throw new NotFoundException('Profil ibu tidak ditemukan.');
 
-    // Hitung BMI ibu
     const bmi =
       mother.weightKg && mother.heightCm
         ? mother.weightKg / Math.pow(mother.heightCm / 100, 2)
@@ -375,7 +371,7 @@ export class AiService implements OnModuleInit {
     try {
       const completion = await this.groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
-        model: 'llama-3.3-70b-versatile',
+        model: process.env.AI_MODEL || 'llama-3.3-70b-specdec',
         response_format: { type: 'json_object' },
         temperature: 0.1,
       });
