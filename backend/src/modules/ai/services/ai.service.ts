@@ -156,7 +156,7 @@ export class AiService implements OnModuleInit {
     try {
       const completion = await this.groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
-        model: process.env.AI_MODEL || 'llama-3.3-70b-specdec',
+        model: process.env.AI_MODEL || 'llama-3.1-70b-versatile',
         response_format: { type: 'json_object' },
         temperature: 0.1,
       });
@@ -327,6 +327,8 @@ export class AiService implements OnModuleInit {
     DATA LINGKUNGAN:
     ${envInfo}
 
+---
+
     DATA ANAK:
     ${childrenInfo}
 
@@ -371,7 +373,7 @@ export class AiService implements OnModuleInit {
     try {
       const completion = await this.groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
-        model: process.env.AI_MODEL || 'llama-3.3-70b-specdec',
+        model: process.env.AI_MODEL || 'llama-3.1-70b-versatile',
         response_format: { type: 'json_object' },
         temperature: 0.1,
       });
